@@ -11,6 +11,8 @@
 ```text
 LibreHardwareMonitor/
 ├── Iniciar-LibreHardwareMonitor.bat             # Launcher ultra-rapido (agendador schtasks em 40ms ou shell assincrono)
+├── Iniciar-Elevado.cmd                         # Script de arranque elevado: mata instancias zombi e inicia o executavel
+├── Fechar-LibreHardwareMonitor.bat             # Utilitario para encerrar todas as instancias em segundo plano
 ├── launch.vbs                                 # Script de elevacao assincrona silenciosa via WScript (0 ms de consola)
 ├── Configurar-Arranque-Rapido-Sem-UAC.bat     # Assistente de 1 clique para criar tarefa de alta prioridade sem UAC
 ├── docs/                                      # Hub Central de Documentacao
