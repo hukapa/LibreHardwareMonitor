@@ -20,11 +20,12 @@ if %errorlevel% neq 0 (
     exit /b 0
 )
 
-schtasks /create /tn "LibreHardwareMonitor" /tr "\"%EXE_PATH%\"" /sc onlogon /rl highest /f >nul 2>&1
+:: Regista como LibreHardwareMonitor-CrystalStudio para nunca colidir com tarefas de outros diretorios
+schtasks /create /tn "LibreHardwareMonitor-CrystalStudio" /tr "\"%EXE_PATH%\"" /sc onlogon /rl highest /f >nul 2>&1
 if %errorlevel% == 0 (
-    echo Sucesso: Tarefa 'LibreHardwareMonitor' registada com sucesso!
+    echo Sucesso: Tarefa 'LibreHardwareMonitor-CrystalStudio' registada com sucesso!
     echo.
-    echo A partir de agora, o LibreHardwareMonitor arranca em ~40ms:
+    echo A partir de agora, o LibreHardwareMonitor deste projeto arranca em ~40ms:
     echo 1. Sem caixas de confirmacao do Controlo de Conta de Utilizador (UAC).
     echo 2. Sem consolas pretas abertas.
     echo.

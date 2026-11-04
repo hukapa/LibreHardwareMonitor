@@ -102,6 +102,11 @@ LibreHardwareMonitor.Windows.Forms/UI/
 ### 7.2 Otimizacao do Arranque e Supressao de Prompts UAC
 * **Problema:** A invocacao via PowerShell no script `.bat` mantinha a janela de comando do Windows aberta durante o tempo de inicializacao do runtime e aguardava pela resposta da caixa de confirmacao de administrador (UAC).
 * **Solucao:** 
-  1. Suporte a tarefa de alta prioridade no Agendador de Tarefas do Windows (`schtasks /run /tn "LibreHardwareMonitor"`), permitindo arranque imediato em ~40ms sem caixas de confirmacao do UAC.
+  1. Suporte a tarefa de alta prioridade no Agendador de Tarefas do Windows (`schtasks /run /tn "LibreHardwareMonitor-CrystalStudio"`), permitindo arranque imediato em ~40ms sem caixas de confirmacao do UAC.
   2. Implementacao de `launch.vbs` executado de forma assincrona via `wscript //nologo`, eliminando o atraso do PowerShell e fechando a consola CMD em menos de 50ms.
   3. Disponibilizacao de `Configurar-Arranque-Rapido-Sem-UAC.bat` para registo da tarefa no sistema com um unico clique.
+
+### 7.3 Eliminacao de Congelamento de 5s no Servidor Web
+* **Problema:** Ao desligar a funcionalidade de Web Server ou fechar a janela, o programa paralisava durante 5 segundos antes de terminar.
+* **Causa Raiz:** O metodo `StopHttpListener()` aguardava ate 5 segundos por `_listenerTask` que se encontrava bloqueada em `GetContextAsync()`. Sem abortar o listener antes do `Wait`, a thread da interface de utilizador ficava bloqueada.
+* **Solucao:** A chamada a `_listener.Stop()` foi antecipada para encerrar imediatamente o socket HTTP de escuta, permitindo saida em 0 milissegundos sem congelamento visual.

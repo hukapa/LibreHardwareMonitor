@@ -95,3 +95,14 @@
   - Otimizacao de `Iniciar-LibreHardwareMonitor.bat` para verificar inicialmente o Agendador de Tarefas do Windows (`schtasks /query /tn "LibreHardwareMonitor"`). Se a tarefa estiver presente, arranca de imediato em ~40ms sem caixa de confirmacao UAC.
   - Criacao de `launch.vbs` executado de forma assincrona via `wscript //nologo`, eliminando atrasos de inicializacao do PowerShell e permitindo fecho instantaneo da consola CMD (< 50ms).
   - Criacao do utilitario `Configurar-Arranque-Rapido-Sem-UAC.bat` para registar a tarefa de alta prioridade no Agendador de Tarefas do Windows com um unico clique.
+
+---
+
+## 9. Fase 9: Eliminacao de Congelamento de 5s no Servidor Web e Desambiguacao de Tarefas
+
+* **Problemas Identificados:**  
+  1. Ao desmarcar a opcao "Run Web Server" ou ao encerrar a aplicacao, a interface congelava durante exatamente 5 segundos antes de responder.
+  2. O utilizador visualizou inesperadamente o design web legado de 2012 e sem atualizacao de dados, devido a colisao com uma tarefa pre-existente no Agendador de Tarefas do Windows apontando para uma instalacao antiga (`Desktop\stuff 231\LibreHardwareMonitor\LibreHardwareMonitor.exe`).
+* **Causas Raiz e Solucoes:**
+  - **Bloqueio de 5s:** Em `HttpServer.cs`, `StopHttpListener()` invocava `_listenerTask?.Wait(TimeSpan.FromSeconds(5))` antes de chamar `_listener?.Stop()`. Como `GetContextAsync()` bloqueia de forma sincrona ate receber um novo socket HTTP ou ser explicitamente abortado, a thread de interface aguardava 5 segundos inteiros ate ao timeout. A ordem foi invertida: `_listener?.Stop()` e chamado em primeiro lugar com tratamento dedicado de `HttpListenerException`, libertando o socket em 0ms.
+  - **Desambiguacao de Tarefas:** O script `Iniciar-LibreHardwareMonitor.bat` agora pesquisa especificamente pela tarefa dedicada `LibreHardwareMonitor-CrystalStudio` e executa a limpeza prévia de processos antigos (`taskkill /F /IM LibreHardwareMonitor.Windows.Forms.exe` e `LibreHardwareMonitor.exe`), assegurando que apenas o binario do fork e executado.

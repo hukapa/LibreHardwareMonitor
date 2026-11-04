@@ -143,8 +143,13 @@ public class HttpServer
         try
         {
             _cts?.Cancel();
-            _listenerTask?.Wait(TimeSpan.FromSeconds(5)); // Graceful wait
-            _listener?.Stop();
+            try
+            {
+                _listener?.Stop();
+            }
+            catch { }
+
+            _listenerTask?.Wait(TimeSpan.FromMilliseconds(300));
             _cts?.Dispose();
         }
         catch (HttpListenerException)
@@ -161,7 +166,7 @@ public class HttpServer
 
     private async Task ProcessRequestsAsync(CancellationToken cancellationToken)
     {
-        while (_listener.IsListening && !cancellationToken.IsCancellationRequested)
+        while (_listener != null && _listener.IsListening && !cancellationToken.IsCancellationRequested)
         {
             try
             {
@@ -174,6 +179,10 @@ public class HttpServer
                 System.Diagnostics.Debug.WriteLine($"HttpListener error (code {ex.ErrorCode}): {ex.Message}. Retrying in 5 seconds.");
                 await Task.Delay(5000, cancellationToken);
             }
+            catch (HttpListenerException)
+            {
+                break; // Listener stopped or abort
+            }
             catch (ObjectDisposedException)
             {
                 break; // Listener stopped
@@ -184,6 +193,8 @@ public class HttpServer
             }
             catch (Exception ex)
             {
+                if (_listener == null || !_listener.IsListening)
+                    break;
                 System.Diagnostics.Debug.WriteLine($"Unexpected HttpListener error: {ex.Message}");
             }
         }

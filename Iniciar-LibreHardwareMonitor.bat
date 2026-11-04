@@ -1,11 +1,25 @@
 @echo off
 setlocal
 
-:: 1. Se a tarefa agendada existir, arranca instantaneamente em 40ms sem prompt UAC
-schtasks /query /tn "LibreHardwareMonitor" >nul 2>&1
+set "EXE_PATH=%~dp0bin\Publish\LibreHardwareMonitor.Windows.Forms.exe"
+set "WORK_DIR=%~dp0bin\Publish"
+
+if not exist "%EXE_PATH%" (
+    set "EXE_PATH=%~dp0bin\Publish-SingleFile\LibreHardwareMonitor.Windows.Forms.exe"
+    set "WORK_DIR=%~dp0bin\Publish-SingleFile"
+)
+
+if not exist "%EXE_PATH%" (
+    set "EXE_PATH=%~dp0bin\Release\net8.0-windows\LibreHardwareMonitor.Windows.Forms.exe"
+    set "WORK_DIR=%~dp0bin\Release\net8.0-windows"
+)
+
+:: 1. Se existir a tarefa agendada especifica deste projeto, arranca instantaneamente em 40ms sem prompt UAC
+schtasks /query /tn "LibreHardwareMonitor-CrystalStudio" >nul 2>&1
 if %errorlevel% == 0 (
     taskkill /F /IM LibreHardwareMonitor.Windows.Forms.exe >nul 2>&1
-    schtasks /run /tn "LibreHardwareMonitor" >nul 2>&1
+    taskkill /F /IM LibreHardwareMonitor.exe >nul 2>&1
+    schtasks /run /tn "LibreHardwareMonitor-CrystalStudio" >nul 2>&1
     exit /b 0
 )
 
