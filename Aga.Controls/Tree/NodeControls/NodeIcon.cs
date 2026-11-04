@@ -20,8 +20,11 @@ namespace Aga.Controls.Tree.NodeControls
 			Image image = GetIcon(node);
 			if (image != null)
 			{
-				int scaledX = node.Tree.GetScaledSize(image.Size.Width, false);
-				int scaledY = node.Tree.GetScaledSize(image.Size.Height);
+				// High-DPI images may carry their logical (96 DPI) size in Tag, so they are
+				// laid out at the same logical size and drawn 1:1 at the native resolution.
+				Size logical = image.Tag is Size tagSize ? tagSize : image.Size;
+				int scaledX = node.Tree.GetScaledSize(logical.Width, false);
+				int scaledY = node.Tree.GetScaledSize(logical.Height);
 				return new Size(scaledX, scaledY); ;
 			}
 			else

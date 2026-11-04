@@ -125,7 +125,7 @@ public sealed partial class MainForm : Form
         }
 
         TreeModel treeModel = new();
-        _root = new Node(Environment.MachineName) { Image = EmbeddedResources.GetImage("computer.png") };
+        _root = new Node(Environment.MachineName) { Image = Icons.FluentIcons.Computer };
 
         treeModel.Nodes.Add(_root);
         treeView.Model = treeModel;
