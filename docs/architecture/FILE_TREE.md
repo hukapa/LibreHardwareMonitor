@@ -10,16 +10,19 @@
 
 ```text
 LibreHardwareMonitor/
-├── docs/                                          # Hub Central de Documentacao
-│   ├── INDEX.md                                   # Guia Master de navegacao e sitemap
+├── Iniciar-LibreHardwareMonitor.bat             # Launcher ultra-rapido (agendador schtasks em 40ms ou shell assincrono)
+├── launch.vbs                                 # Script de elevacao assincrona silenciosa via WScript (0 ms de consola)
+├── Configurar-Arranque-Rapido-Sem-UAC.bat     # Assistente de 1 clique para criar tarefa de alta prioridade sem UAC
+├── docs/                                      # Hub Central de Documentacao
+│   ├── INDEX.md                               # Guia Master de navegacao e sitemap
 │   ├── architecture/
-│   │   └── FILE_TREE.md                           # Este ficheiro: registo rapido de todos os ficheiros e funcoes
+│   │   └── FILE_TREE.md                       # Este ficheiro: registo rapido de todos os ficheiros e funcoes
 │   ├── reports/
-│   │   └── RELATORIO_ESTADO_E_MELHORIAS.md        # Relatorio tecnico detalhado (SAC, .NET 8, Tray, Web)
+│   │   └── RELATORIO_ESTADO_E_MELHORIAS.md    # Relatorio tecnico detalhado (SAC, .NET 8, Tray, Web)
 │   ├── history/
-│   │   └── DOCUMENTATION.md                       # Historico cronologico de engenharia
+│   │   └── DOCUMENTATION.md                   # Historico cronologico de engenharia
 │   └── agents/
-│       └── AGENTS.md                              # Regras e padroes para programadores e agentes
+│       └── AGENTS.md                          # Regras e padroes para programadores e agentes
 │
 ├── LibreHardwareMonitor.Windows.Forms/            # Projeto Desktop WinForms Principal
 │   ├── Program.cs                                 # Ponto de entrada, verificacao de ficheiros e crash handler

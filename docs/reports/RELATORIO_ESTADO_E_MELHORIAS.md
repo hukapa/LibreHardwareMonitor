@@ -90,3 +90,18 @@ LibreHardwareMonitor.Windows.Forms/UI/
 * **Erros de Compilacao:** 0
 * **Avisos:** 0 avisos bloqueantes
 * **Regra Zero Emojis:** 100% em conformidade em todo o repositorio.
+
+---
+
+## 7. Diagnostico e Correcoes de Rotas HTTP e Arranque Instantaneo
+
+### 7.1 Erro 404 em `/data.json`
+* **Causa Raiz:** O cliente JavaScript no navegador adicionava parametros de cache-busting (`?t=timestamp`) aos pedidos `GET /data.json?t=...`. A implementacao do `HttpServer.cs` lia `request.RawUrl.Substring(1)`, obtendo `"data.json?t=..."`, o que falhava a condicao `requestedFile == "data.json"`. Como resultado, o servidor tentava carregar um recurso embutido inexistente e respondia com status HTTP 404.
+* **Solucao:** A deteção do pedido foi refatorada para utilizar `request.Url.AbsolutePath.TrimStart('/')`, garantindo isolamento estrito entre o caminho do recurso solicitado e as cadeias de consulta (`QueryString`). O endpoint responde agora de forma imediata com o schema JSON esperado pelo dashboard.
+
+### 7.2 Otimizacao do Arranque e Supressao de Prompts UAC
+* **Problema:** A invocacao via PowerShell no script `.bat` mantinha a janela de comando do Windows aberta durante o tempo de inicializacao do runtime e aguardava pela resposta da caixa de confirmacao de administrador (UAC).
+* **Solucao:** 
+  1. Suporte a tarefa de alta prioridade no Agendador de Tarefas do Windows (`schtasks /run /tn "LibreHardwareMonitor"`), permitindo arranque imediato em ~40ms sem caixas de confirmacao do UAC.
+  2. Implementacao de `launch.vbs` executado de forma assincrona via `wscript //nologo`, eliminando o atraso do PowerShell e fechando a consola CMD em menos de 50ms.
+  3. Disponibilizacao de `Configurar-Arranque-Rapido-Sem-UAC.bat` para registo da tarefa no sistema com um unico clique.

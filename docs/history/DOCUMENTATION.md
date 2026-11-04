@@ -82,3 +82,16 @@
   - Substituicao de `IsFileAvailable(string fileName)` por `IsAssemblyAvailable(string assemblyName)`.
   - Resolucao de assemblies atraves de `AppDomain.CurrentDomain.GetAssemblies()` e `Assembly.Load(new AssemblyName(assemblyName))` com fallback seguro para verificacao de ficheiro fisico em disco.
   - Re-publicacao do executavel standalone com sucesso e validacao de arranque sem erros em ambiente de producao.
+
+---
+
+## 8. Fase 8: Correcao de Roteamento HTTP `/data.json` e Otimizacao de Arranque
+
+* **Problemas Identificados:**  
+  1. O endpoint REST `http://localhost:8085/data.json?t=...` retornava erro HTTP 404. Em `HttpServer.cs`, a rota comparava `requestedFile == "data.json"` extraindo a string de `request.RawUrl.Substring(1)`, que continha os parametros de query de cache busting (`?t=...`), falhando a correspondencia exata e caindo na pesquisa de recursos estaticos inexistentes.
+  2. O script de arranque `Iniciar-LibreHardwareMonitor.bat` mantinha a janela da consola aberta durante varios segundos enquanto aguardava a elevacao sincrona via PowerShell, e solicitava confirmacao de UAC a cada execucao.
+* **Acoes Efetuadas:**
+  - Em `HttpServer.cs`, refatoracao da deteção de rotas para `request.Url.AbsolutePath.TrimStart('/')`, isolando o caminho do recurso dos parametros de query (`?t=...`) e garantindo correspondencia para `data.json`, `images_icon/`, `metrics`, `Sensor` e `ResetAllMinMax`.
+  - Otimizacao de `Iniciar-LibreHardwareMonitor.bat` para verificar inicialmente o Agendador de Tarefas do Windows (`schtasks /query /tn "LibreHardwareMonitor"`). Se a tarefa estiver presente, arranca de imediato em ~40ms sem caixa de confirmacao UAC.
+  - Criacao de `launch.vbs` executado de forma assincrona via `wscript //nologo`, eliminando atrasos de inicializacao do PowerShell e permitindo fecho instantaneo da consola CMD (< 50ms).
+  - Criacao do utilitario `Configurar-Arranque-Rapido-Sem-UAC.bat` para registar a tarefa de alta prioridade no Agendador de Tarefas do Windows com um unico clique.

@@ -423,27 +423,27 @@ public class HttpServer
                     }
                 case "GET":
                     {
-                        string requestedFile = request.RawUrl.Substring(1);
+                        string requestedPath = request.Url.AbsolutePath.TrimStart('/');
 
-                        if (requestedFile == "data.json")
+                        if (string.Equals(requestedPath, "data.json", StringComparison.OrdinalIgnoreCase))
                         {
                             await SendJsonAsync(context.Response, request);
                             return;
                         }
 
-                        if (requestedFile.Contains("images_icon"))
+                        if (requestedPath.StartsWith("images_icon/", StringComparison.OrdinalIgnoreCase))
                         {
-                            await ServeResourceImageAsync(context.Response, requestedFile.Replace("images_icon/", string.Empty));
+                            await ServeResourceImageAsync(context.Response, requestedPath.Substring("images_icon/".Length));
                             return;
                         }
 
-                        if (requestedFile.StartsWith("metrics?") || requestedFile == "metrics")
+                        if (string.Equals(requestedPath, "metrics", StringComparison.OrdinalIgnoreCase))
                         {
                             await SendPrometheusAsync(context.Response, request);
                             return;
                         }
 
-                        if (requestedFile.Contains("Sensor"))
+                        if (string.Equals(requestedPath, "Sensor", StringComparison.OrdinalIgnoreCase) || requestedPath.StartsWith("Sensor/", StringComparison.OrdinalIgnoreCase))
                         {
                             var sensorResult = new Dictionary<string, object>();
                             HandleSensorRequest(request, sensorResult);
@@ -451,7 +451,7 @@ public class HttpServer
                             return;
                         }
 
-                        if (requestedFile.Contains("ResetAllMinMax"))
+                        if (requestedPath.IndexOf("ResetAllMinMax", StringComparison.OrdinalIgnoreCase) >= 0)
                         {
                             _rootElement.Accept(new SensorVisitor(delegate (ISensor sensor)
                             {
@@ -463,12 +463,12 @@ public class HttpServer
                         }
 
                         // default file to be served
-                        if (string.IsNullOrEmpty(requestedFile))
-                            requestedFile = "index.html";
+                        if (string.IsNullOrEmpty(requestedPath))
+                            requestedPath = "index.html";
 
-                        string[] splits = requestedFile.Split('.');
+                        string[] splits = requestedPath.Split('.');
                         string ext = splits[splits.Length - 1];
-                        await ServeResourceFileAsync(context.Response, "Web." + requestedFile.Replace('/', '.'), ext);
+                        await ServeResourceFileAsync(context.Response, "Web." + requestedPath.Replace('/', '.'), ext);
                         break;
                     }
                 default:
