@@ -29,72 +29,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
 
         private static void Init()
         {
-            TreeViewAdv.CustomPlusMinusRenderFunc = (g, rect, isExpanded) =>
-            {
-                int x = rect.Left;
-                int y = rect.Top + 5;
-                int size = 8;
-                using (Brush brush = new SolidBrush(Current.BackgroundColor))
-                {
-                    g.FillRectangle(brush, x - 1, y - 1, size + 4, size + 4);
-                }
-                using (Pen pen = new Pen(Current.TreeOutlineColor))
-                {
-
-                    g.DrawRectangle(pen, x, y, size, size);
-                    g.DrawLine(pen, x + 2, y + (size / 2), x + size - 2, y + (size / 2));
-                    if (!isExpanded)
-                    {
-                        g.DrawLine(pen, x + (size / 2), y + 2, x + (size / 2), y + size - 2);
-                    }
-                }
-            };
-
-            TreeViewAdv.CustomCheckRenderFunc = (g, rect, isChecked) =>
-            {
-                int x = rect.Left;
-                int y = rect.Top + 1;
-                int size = 12;
-                using (Brush brush = new SolidBrush(Current.BackgroundColor))
-                {
-                    g.FillRectangle(brush, x - 1, y - 1, 12, 12);
-                }
-                using (Pen pen = new Pen(Current.TreeOutlineColor))
-                {
-                    g.DrawRectangle(pen, x, y, size, size);
-                    if (isChecked)
-                    {
-                        x += 3;
-                        y += 3;
-                        g.DrawLine(pen, x, y + 3, x + 2, y + 5);
-                        g.DrawLine(pen, x + 2, y + 5, x + 6, y + 1);
-                        g.DrawLine(pen, x, y + 4, x + 2, y + 6);
-                        g.DrawLine(pen, x + 2, y + 6, x + 6, y + 2);
-                    }
-                }
-            };
-
-            TreeViewAdv.CustomColumnBackgroundRenderFunc = (g, rect, isPressed, isHot) =>
-            {
-                using (Brush brush = new SolidBrush(Current.TreeBackgroundColor))
-                {
-                    g.FillRectangle(brush, rect);
-                }
-                using (Pen pen = new Pen(Current.TreeRowSepearatorColor))
-                {
-                    g.DrawLine(pen, rect.Left, rect.Top, rect.Right, rect.Top);
-                    g.DrawLine(pen, rect.Left, rect.Top + 1, rect.Right, rect.Top + 1);
-                }
-            };
-
-            TreeViewAdv.CustomColumnTextRenderFunc = (g, rect, font, text) =>
-            {
-                TextRenderer.DrawText(g, text, font, rect, Current.TreeTextColor, TextFormatFlags.Left);
-            };
-
-            TreeViewAdv.CustomHorizontalLinePen = new Pen(Current.TreeRowSepearatorColor);
-            TreeViewAdv.CustomSelectedRowBrush = new SolidBrush(Current.TreeSelectedBackgroundColor);
-            TreeViewAdv.CustomSelectedTextColor = Current.TreeSelectedTextColor;
+            ThemedTreeRenderer.Install(_current);
         }
 
         private static List<Theme> _all;
@@ -172,6 +107,19 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
         public abstract Color SelectedBackgroundColor { get; }
         public abstract Color SelectedForegroundColor { get; }
 
+        // fluent design tokens
+        public virtual bool IsDark => false;
+        public virtual Color AccentColor => FluentStyle.AccentFor(IsDark);
+        public virtual Color AccentForegroundColor => FluentStyle.RelativeLuminance(AccentColor) > 0.4 ? Color.Black : Color.White;
+        public virtual Color SurfaceColor => BackgroundColor;
+        public virtual Color SurfaceStrokeColor => StrongLineColor;
+        public virtual Color MutedForegroundColor => FluentStyle.Blend(ForegroundColor, SurfaceColor, 0.42);
+        public virtual Color HoverBackgroundColor => FluentStyle.Blend(SurfaceColor, ForegroundColor, IsDark ? 0.06 : 0.04);
+        public virtual Color StateCoolColor => IsDark ? Color.FromArgb(108, 203, 95) : Color.FromArgb(15, 123, 15);
+        public virtual Color StateWarmColor => IsDark ? Color.FromArgb(252, 225, 0) : Color.FromArgb(157, 93, 0);
+        public virtual Color StateHotColor => IsDark ? Color.FromArgb(255, 153, 164) : Color.FromArgb(196, 43, 28);
+        public virtual int CornerRadius => 6;
+
         // button
         public virtual Color ButtonBackgroundColor => BackgroundColor;
         public virtual Color ButtonBorderColor => ForegroundColor;
@@ -180,32 +128,32 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
         public virtual Color ButtonTextColor => ForegroundColor;
 
         // menu
-        public virtual Color MenuBackgroundColor => BackgroundColor;
+        public virtual Color MenuBackgroundColor => SurfaceColor;
         public virtual Color MenuBorderColor => StrongLineColor;
         public virtual Color MenuForegroundColor => ForegroundColor;
-        public virtual Color MenuSelectedBackgroundColor => SelectedBackgroundColor;
+        public virtual Color MenuSelectedBackgroundColor => HoverBackgroundColor;
         public virtual Color MenuSelectedForegroundColor => SelectedForegroundColor;
 
         // plot
-        public virtual Color PlotBackgroundColor => BackgroundColor;
-        public virtual Color PlotBorderColor => ForegroundColor;
+        public virtual Color PlotBackgroundColor => SurfaceColor;
+        public virtual Color PlotBorderColor => StrongLineColor;
         public abstract Color[] PlotColorPalette { get; }
         public abstract Color PlotGridMajorColor { get; }
         public abstract Color PlotGridMinorColor { get; }
-        public virtual Color PlotTextColor => ForegroundColor;
+        public virtual Color PlotTextColor => MutedForegroundColor;
 
         // scrollbar
-        public virtual Color ScrollbarBackground => BackgroundColor;
-        public virtual Color ScrollbarTrack => StrongLineColor;
+        public virtual Color ScrollbarBackground => SurfaceColor;
+        public virtual Color ScrollbarTrack => FluentStyle.Blend(SurfaceColor, ForegroundColor, 0.28);
 
         // splitter
         public virtual Color SplitterColor => BackgroundColor;
         public virtual Color SplitterHoverColor => SelectedBackgroundColor;
 
         // tree
-        public virtual Color TreeBackgroundColor => BackgroundColor;
-        public virtual Color TreeOutlineColor => ForegroundColor;
-        public virtual Color TreeSelectedBackgroundColor => SelectedBackgroundColor;
+        public virtual Color TreeBackgroundColor => SurfaceColor;
+        public virtual Color TreeOutlineColor => MutedForegroundColor;
+        public virtual Color TreeSelectedBackgroundColor => FluentStyle.Blend(SurfaceColor, AccentColor, IsDark ? 0.24 : 0.14);
         public virtual Color TreeTextColor => ForegroundColor;
         public virtual Color TreeSelectedTextColor => SelectedForegroundColor;
         public virtual Color TreeRowSepearatorColor => LineColor;
@@ -224,6 +172,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
                 DwmSetWindowAttribute(form.Handle, DWMWA_CAPTION_COLOR, ref color, sizeof(int));
                 color = ColorTranslator.ToWin32(WindowTitlebarForegroundColor);
                 DwmSetWindowAttribute(form.Handle, DWMWA_TEXT_COLOR, ref color, sizeof(int));
+                FluentStyle.ApplyWindowChrome(form.Handle, SurfaceStrokeColor);
             }
             else if (IsWindows10OrGreater(17763))
             {
@@ -246,7 +195,11 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
 
         public void Apply(Control control)
         {
-            if (control is Button button)
+            if (control is IThemedControl themedControl)
+            {
+                themedControl.ApplyTheme(this);
+            }
+            else if (control is Button button)
             {
                 button.ForeColor = ButtonTextColor;
                 button.FlatStyle = FlatStyle.Flat;
@@ -285,7 +238,6 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
 
         private const int DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1 = 19;
         private const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
-        private const int DWMWA_BORDER_COLOR = 34;
         private const int DWMWA_CAPTION_COLOR = 35;
         private const int DWMWA_TEXT_COLOR = 36;
 
@@ -293,5 +245,11 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
         {
             return !Software.OperatingSystem.IsUnix && Environment.OSVersion.Version.Major >= 10 && Environment.OSVersion.Version.Build >= build;
         }
+    }
+
+    /// <summary>Controls that paint themselves from the active <see cref="Theme" /> tokens.</summary>
+    public interface IThemedControl
+    {
+        void ApplyTheme(Theme theme);
     }
 }

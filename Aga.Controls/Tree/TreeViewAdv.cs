@@ -33,7 +33,7 @@ namespace Aga.Controls.Tree
 
         private const int LeftMargin = 7;
 		internal const int ItemDragSensivity = 4;
-		private readonly int _columnHeaderHeight;
+		private int _columnHeaderHeight;
 		private const int DividerWidth = 9;
 		private const int DividerCorrectionGap = -2;
 

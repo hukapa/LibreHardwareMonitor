@@ -64,6 +64,19 @@ namespace Aga.Controls.Tree
 		}
 
 		/// <summary>
+		/// Height of the column header row in logical (96 DPI) pixels; scaled to the current DPI when set.
+		/// </summary>
+		[Browsable(false), DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+		public int ColumnHeaderLogicalHeight
+		{
+			set
+			{
+				_columnHeaderHeight = GetScaledSize(Math.Max(value, 1));
+				UpdateView();
+			}
+		}
+
+		/// <summary>
 		/// returns all nodes, which parent is expanded
 		/// </summary>
 		private IEnumerable<TreeNodeAdv> VisibleNodes

@@ -84,8 +84,10 @@ public sealed partial class MainForm : Form
         // set the DockStyle here, to avoid conflicts with the MainMenu
         splitContainer.Dock = DockStyle.Fill;
 
-        Font = SystemFonts.MessageBoxFont;
-        treeView.Font = SystemFonts.MessageBoxFont;
+        Font = FluentStyle.UiFont;
+        treeView.Font = FluentStyle.UiFont;
+        mainMenu.Font = FluentStyle.UiFont;
+        mainMenu.Padding = new Padding(LogicalToDeviceUnits(4), LogicalToDeviceUnits(3), 0, LogicalToDeviceUnits(3));
 
         // Set the bounds immediately, so that our child components can be
         // properly placed.
@@ -107,7 +109,7 @@ public sealed partial class MainForm : Form
             Theme.SetAutoTheme();
         }
 
-        _plotPanel = new PlotPanel(_settings, _unitManager) { Font = SystemFonts.MessageBoxFont, Dock = DockStyle.Fill };
+        _plotPanel = new PlotPanel(_settings, _unitManager) { Font = FluentStyle.UiFont, Dock = DockStyle.Fill };
 
         nodeCheckBox.IsVisibleValueNeeded += NodeCheckBox_IsVisibleValueNeeded;
         nodeTextBoxText.DrawText += NodeTextBoxText_DrawText;
@@ -150,7 +152,9 @@ public sealed partial class MainForm : Form
         else
         {
             // Windows
-            treeView.RowHeight = Math.Max(treeView.Font.Height + 1, 18);
+            treeView.RowHeight = Math.Max(treeView.Font.Height + LogicalToDeviceUnits(10), LogicalToDeviceUnits(26));
+            treeView.ShowLines = false;
+            treeView.ColumnHeaderLogicalHeight = 30;
             _gadget = new SensorGadget(_computer, _settings, _unitManager);
             _gadget.HideShowCommand += HideShowClick;
         }

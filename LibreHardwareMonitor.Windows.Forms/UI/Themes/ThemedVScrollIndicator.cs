@@ -106,8 +106,8 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
             {
                 int start = height * (_scrollbar.Value - _scrollbar.Minimum) / range;
                 int end = height * (_scrollbar.Value - _scrollbar.Minimum + _scrollbar.LargeChange) / range;
-                using (SolidBrush brush = new SolidBrush(Theme.Current.ScrollbarTrack))
-                    g.FillRectangle(brush, new Rectangle(2, start, Bounds.Width - 4, end - start));
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                FluentStyle.FillRounded(g, Theme.Current.ScrollbarTrack, new RectangleF(2, start, Bounds.Width - 4, end - start), (Bounds.Width - 4) / 2f);
             }
         }
     }
