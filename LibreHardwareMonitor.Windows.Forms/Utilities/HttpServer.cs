@@ -310,7 +310,7 @@ public class HttpServer
     {
         string action = HttpUtility.ParseQueryString(request.Url.Query)["action"];
         if ((action == null || string.Equals(action, "Get", StringComparison.OrdinalIgnoreCase)) &&
-            !request.RawUrl.Contains("ResetAllMinMax", StringComparison.OrdinalIgnoreCase))
+            request.RawUrl.IndexOf("ResetAllMinMax", StringComparison.OrdinalIgnoreCase) < 0)
         {
             return false;
         }

@@ -411,11 +411,11 @@ internal class LpcIO
                 {
                     case 0x92:
                         // MSI AM5/LGA1851 800 Series Motherboard Compatibility (Nuvoton NCT6687DR)
-                        if (motherboard.Manufacturer == Manufacturer.MSI && (motherboard.SMBios.Board.ProductName.ToString().Contains("B840", StringComparison.OrdinalIgnoreCase) ||
-                            motherboard.SMBios.Board.ProductName.ToString().Contains("B850", StringComparison.OrdinalIgnoreCase) ||
-                            motherboard.SMBios.Board.ProductName.ToString().Contains("B860", StringComparison.OrdinalIgnoreCase) ||
-                            motherboard.SMBios.Board.ProductName.ToString().Contains("X870", StringComparison.OrdinalIgnoreCase) ||
-                            motherboard.SMBios.Board.ProductName.ToString().Contains("Z890", StringComparison.OrdinalIgnoreCase)))
+                        if (motherboard.Manufacturer == Manufacturer.MSI && (motherboard.SMBios.Board.ProductName.ToString().IndexOf("B840", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                            motherboard.SMBios.Board.ProductName.ToString().IndexOf("B850", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                            motherboard.SMBios.Board.ProductName.ToString().IndexOf("B860", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                            motherboard.SMBios.Board.ProductName.ToString().IndexOf("X870", StringComparison.OrdinalIgnoreCase) >= 0 ||
+                            motherboard.SMBios.Board.ProductName.ToString().IndexOf("Z890", StringComparison.OrdinalIgnoreCase) >= 0))
                         {
                             chip = Chip.NCT6687DR;
                         }

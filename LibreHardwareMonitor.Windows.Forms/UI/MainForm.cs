@@ -236,7 +236,7 @@ public sealed partial class MainForm : Form
         _minimizeToTray = new UserOption("minTrayMenuItem", true, minTrayMenuItem, _settings);
         _minimizeToTray.Changed += delegate { _systemTray.IsMainIconEnabled = _minimizeToTray.Value; };
 
-        _minimizeOnClose = new UserOption("minCloseMenuItem", false, minCloseMenuItem, _settings);
+        _minimizeOnClose = new UserOption("minCloseMenuItem", true, minCloseMenuItem, _settings);
 
         _autoStart = new UserOption(null, _startupManager.Startup, startupMenuItem, _settings);
         _autoStart.Changed += delegate
@@ -1239,7 +1239,25 @@ public sealed partial class MainForm : Form
     {
         Visible = !Visible;
         if (Visible)
+        {
+            if (WindowState == FormWindowState.Minimized)
+                WindowState = FormWindowState.Normal;
             Activate();
+        }
+    }
+
+    protected override void OnFormClosing(FormClosingEventArgs e)
+    {
+        if (e.CloseReason == CloseReason.UserClosing && _minimizeOnClose.Value)
+        {
+            e.Cancel = true;
+            Visible = false;
+            if (!_systemTray.IsMainIconEnabled)
+                _systemTray.IsMainIconEnabled = true;
+            return;
+        }
+
+        base.OnFormClosing(e);
     }
 
     protected override void WndProc(ref Message m)
@@ -1249,7 +1267,8 @@ public sealed partial class MainForm : Form
         const int SC_MINIMIZE = 0xF020;
         const int SC_CLOSE = 0xF060;
 
-        if (_minimizeToTray.Value && m.Msg == WM_SYSCOMMAND && m.WParam.ToInt64() == SC_MINIMIZE)
+        int sysCmd = (int)(m.WParam.ToInt64() & 0xFFF0);
+        if (_minimizeToTray.Value && m.Msg == WM_SYSCOMMAND && sysCmd == SC_MINIMIZE)
         {
             SysTrayHideShow();
         }
@@ -1257,17 +1276,9 @@ public sealed partial class MainForm : Form
         {
             Theme.SetAutoTheme();
         }
-        else if (_minimizeOnClose.Value && m.Msg == WM_SYSCOMMAND && m.WParam.ToInt64() == SC_CLOSE)
+        else if (_minimizeOnClose.Value && m.Msg == WM_SYSCOMMAND && sysCmd == SC_CLOSE)
         {
-            //Apparently the user wants to minimize rather than close
-            //Now we still need to check if we're going to the tray or not
-            //Note: the correct way to do this would be to send out SC_MINIMIZE,
-            //but since the code here is so simple,
-            //that would just be a waste of time.
-            if (_minimizeToTray.Value)
-                SysTrayHideShow();
-            else
-                WindowState = FormWindowState.Minimized;
+            SysTrayHideShow();
         }
         else
         {

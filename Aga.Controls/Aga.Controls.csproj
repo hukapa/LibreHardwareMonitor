@@ -5,7 +5,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <ProductVersion>9.0.30729</ProductVersion>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net8.0-windows;net472</TargetFrameworks>
+    <UseWindowsForms>true</UseWindowsForms>
     <AssemblyTitle>Aga.Controls</AssemblyTitle>
     <Description>http://sourceforge.net/projects/treeviewadv/</Description>
     <Copyright>Copyright © Andrey Gliznetsov 2006 - 2009</Copyright>
@@ -21,7 +22,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DebugType>pdbonly</DebugType>
   </PropertyGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
     <Reference Include="System.Design" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>

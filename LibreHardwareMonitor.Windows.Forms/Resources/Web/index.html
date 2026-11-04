@@ -1,63 +1,812 @@
-<!-- This Source Code Form is subject to the terms of the Mozilla Public
-   - License, v. 2.0. If a copy of the MPL was not distributed with this
-   - file, You can obtain one at http://mozilla.org/MPL/2.0/.  
-	 
-	 - Copyright (C) 2012 Prince Samuel <prince.samuel@gmail.com>  -->
-
-<html>
+<!DOCTYPE html>
+<html lang="pt">
 <head>
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico" />
-    <title>Libre Hardware Monitor - Web Version</title>
-    <script type='text/javascript' src='js/jquery-1.7.2.min.js'></script>
-    <script type='text/javascript' src='js/jquery.tmpl.min.js'></script>
-    <script type='text/javascript' src='js/knockout-2.1.0.min.js'></script>
-    <script type='text/javascript' src='js/knockout.mapping-latest.min.js'></script>
-
-    <link href="css/jquery.treeTable.css" rel="stylesheet" type="text/css" />
-    <script type='text/javascript' src='js/jquery.treeTable.min.js'></script>
-
-    <link href="css/custom-theme/jquery-ui-1.8.16.custom.css" rel="stylesheet" type="text/css" />
-    <link href="css/ohm_web.css" rel="stylesheet" type="text/css" />
-    <script type='text/javascript' src='js/jquery-ui-1.8.16.custom.min.js'></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- MANDATORY: Declare support for both light and dark themes to prevent FOUC -->
+    <meta name="color-scheme" content="light dark">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <title>Libre Hardware Monitor - Dashboard</title>
     <style>
-        #toolbar {
-            padding: 10px 10px;
+        :root {
+            /* Design Tokens (modern-web-guidance) */
+            --color-bg-light: #f8fafc;
+            --color-bg-dark: #0b0f19;
+            --color-surface-light: #ffffff;
+            --color-surface-dark: #131b2e;
+            --color-surface-alt-light: #f1f5f9;
+            --color-surface-alt-dark: #1e293b;
+            --color-border-light: #e2e8f0;
+            --color-border-dark: rgba(255, 255, 255, 0.08);
+
+            --color-text-light: #0f172a;
+            --color-text-dark: #f8fafc;
+            --color-text-muted-light: #64748b;
+            --color-text-muted-dark: #94a3b8;
+
+            --brand-primary: #3b82f6;
+            --brand-purple: #8b5cf6;
+            --brand-emerald: #10b981;
+            --brand-amber: #f59e0b;
+            --brand-rose: #ef4444;
+
+            --bg: light-dark(var(--color-bg-light), var(--color-bg-dark));
+            --surface: light-dark(var(--color-surface-light), var(--color-surface-dark));
+            --surface-alt: light-dark(var(--color-surface-alt-light), var(--color-surface-alt-dark));
+            --border: light-dark(var(--color-border-light), var(--color-border-dark));
+            --text: light-dark(var(--color-text-light), var(--color-text-dark));
+            --text-muted: light-dark(var(--color-text-muted-light), var(--color-text-muted-dark));
+
+            --scrollbar-track: light-dark(#f1f5f9, #131b2e);
+            --scrollbar-thumb: light-dark(#cbd5e1, #334155);
+
+            color-scheme: light dark;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+            scrollbar-width: thin;
         }
 
-        #slider {
-            display: inline-block;
-            width: 100px;
+        [data-theme="dark"] {
+            color-scheme: dark;
+            --bg: var(--color-bg-dark);
+            --surface: var(--color-surface-dark);
+            --surface-alt: var(--color-surface-alt-dark);
+            --border: var(--color-border-dark);
+            --text: var(--color-text-dark);
+            --text-muted: var(--color-text-muted-dark);
+        }
+
+        [data-theme="light"] {
+            color-scheme: light;
+            --bg: var(--color-bg-light);
+            --surface: var(--color-surface-light);
+            --surface-alt: var(--color-surface-alt-light);
+            --border: var(--color-border-light);
+            --text: var(--color-text-light);
+            --text-muted: var(--color-text-muted-light);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        /* Top Header */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.25rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            backdrop-filter: blur(8px);
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+        }
+
+        .brand-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .brand-badge {
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 0.15rem 0.45rem;
+            border-radius: 9999px;
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--brand-primary);
+            text-transform: uppercase;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 0.25rem 0.6rem;
+            border-radius: 9999px;
+            background: var(--surface-alt);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--brand-emerald);
+            box-shadow: 0 0 8px var(--brand-emerald);
+            animation: pulse 2s infinite;
+        }
+
+        .status-dot.paused {
+            background: var(--brand-amber);
+            box-shadow: none;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .actions-container {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        /* Controls */
+        button, select, input {
+            font-family: inherit;
+            font-size: 0.85rem;
+            color: var(--text);
+            background: var(--surface-alt);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.4rem 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            outline: none;
+        }
+
+        button:hover, select:hover {
+            border-color: var(--brand-primary);
+        }
+
+        button.primary {
+            background: var(--brand-primary);
+            color: #ffffff;
+            border-color: var(--brand-primary);
+            font-weight: 600;
+        }
+
+        button.primary:hover {
+            opacity: 0.9;
+        }
+
+        .view-toggle {
+            display: inline-flex;
+            background: var(--surface-alt);
+            border-radius: 6px;
+            padding: 2px;
+            border: 1px solid var(--border);
+        }
+
+        .view-btn {
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .view-btn.active {
+            background: var(--surface);
+            color: var(--text);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .search-bar {
+            position: relative;
+            flex: 1 1 200px;
+            max-width: 320px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding-left: 2rem;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.65rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+            font-size: 0.85rem;
+        }
+
+        /* Main Container */
+        main {
+            flex: 1;
+            padding: 1.25rem;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* Dashboard Grid View */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.75rem;
+        }
+
+        .card-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            overflow: hidden;
+        }
+
+        .card-icon {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
+            flex-shrink: 0;
+        }
+
+        .card-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 6px;
+            background: var(--surface-alt);
+            color: var(--brand-primary);
+        }
+
+        /* Sensor Row in Cards */
+        .sensor-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px dashed var(--border);
+        }
+
+        .sensor-row:last-child {
+            border-bottom: none;
+        }
+
+        .sensor-label-val {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .sensor-name {
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 65%;
+        }
+
+        .sensor-val {
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .sensor-minmax {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Progress Bar */
+        .progress-bar-bg {
+            width: 100%;
+            height: 6px;
+            background: var(--surface-alt);
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            border-radius: 9999px;
+            background: var(--brand-primary);
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* Status Colors */
+        .temp-cool { color: var(--brand-emerald) !important; }
+        .temp-warm { color: var(--brand-amber) !important; }
+        .temp-hot { color: var(--brand-rose) !important; }
+
+        .fill-cool { background: var(--brand-emerald) !important; }
+        .fill-warm { background: var(--brand-amber) !important; }
+        .fill-hot { background: var(--brand-rose) !important; }
+
+        /* Full Table / Tree View */
+        .table-view-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow-x: auto;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        table.sensors-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+        }
+
+        table.sensors-table th {
+            background: var(--surface-alt);
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border);
+        }
+
+        table.sensors-table td {
+            padding: 0.55rem 1rem;
+            border-bottom: 1px solid var(--border);
+            font-variant-numeric: tabular-nums;
+        }
+
+        table.sensors-table tr:hover td {
+            background: var(--surface-alt);
+        }
+
+        .row-hardware td {
+            font-weight: 700;
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .row-category td {
+            font-weight: 600;
+            color: var(--text-muted);
+            background: rgba(0, 0, 0, 0.02);
+        }
+
+        .sensor-tree-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Footer */
+        footer {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding: 1rem 1.25rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .search-bar {
+                max-width: 100%;
+            }
+            .cards-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
-
-
-    <script type='text/javascript' src='js/ohm_web.js'></script>
-
 </head>
+<body>
+    <header>
+        <div class="brand-container">
+            <img src="images_icon/computer.png" width="24" height="24" alt="LHM Logo">
+            <span class="brand-title">LibreHardwareMonitor</span>
+            <span class="brand-badge">Fork hukapa</span>
+            <div class="status-pill">
+                <span id="statusDot" class="status-dot"></span>
+                <span id="statusText">A carregar...</span>
+            </div>
+        </div>
 
-  <body>
+        <div class="actions-container">
+            <div class="search-bar">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="Filtrar sensores (ex: temp, fan, cpu)...">
+            </div>
 
-    <div class="header">
+            <div class="view-toggle">
+                <button id="btnViewCards" class="view-btn active" title="Visualização em Painel de Cartões">Painel</button>
+                <button id="btnViewTable" class="view-btn" title="Visualização em Árvore Completa">Tabela</button>
+            </div>
 
-      <span id="toolbar" class="ui-widget-header ui-corner-all">
-        <button id="refresh" data-bind="click: update">Refresh</button>
-        <input type="checkbox" id="auto_refresh" data-bind="checked: auto_refresh"/><label for="auto_refresh">Auto Refresh</label>
-        &nbsp;<div id="slider"></div>&nbsp;&nbsp;&nbsp;&nbsp;<span for="auto_refresh" id="lbl"></span>
-      </span>
-    </div>
+            <select id="selectInterval" title="Intervalo de Atualização">
+                <option value="1000">1 segundo</option>
+                <option value="2000" selected>2 segundos</option>
+                <option value="5000">5 segundos</option>
+                <option value="0">Pausado</option>
+            </select>
 
-    <div class="main">
-      <table data-bind="treeTable: flattened, treeOptions: { initialState: 'expanded', clickableNodeNames: true } ">
-        <thead><td>Sensor</td><td>Min</td><td>Value</td><td>Max</td>
-          <tbody data-bind="foreach: flattened">
-            <tr data-bind="attr: { 'id': 'node-' + id(), 'class': parent.id()?'child-of-node-' + parent.id():'' }">
-              <td data-bind="html: '<img src=' + ImageURL() + ' />&nbsp; ' + Text()"></td>
-              <td data-bind="text: Min"></td>
-              <td data-bind="text: Value"></td>
-              <td data-bind="text: Max"></td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </body>
-  </html>
+            <button id="btnRefresh" title="Atualizar Agora">⟳ Atualizar</button>
+            <button id="btnResetMinMax" title="Limpar Valores Mínimos e Máximos">Reset Min/Max</button>
+            <button id="btnThemeToggle" title="Alternar Modo Escuro / Claro">🌓</button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Cards View -->
+        <div id="cardsView" class="cards-grid"></div>
+
+        <!-- Full Table View -->
+        <div id="tableView" class="table-view-container" style="display: none;">
+            <table class="sensors-table">
+                <thead>
+                    <tr>
+                        <th style="width: 50%;">Sensor</th>
+                        <th style="width: 16%;">Mínimo</th>
+                        <th style="width: 17%;">Atual</th>
+                        <th style="width: 17%;">Máximo</th>
+                    </tr>
+                </thead>
+                <tbody id="sensorsTableBody"></tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+        <span>Monitorização Remota em Tempo Real • LibreHardwareMonitor</span>
+        <span id="footerHost">localhost:8085</span>
+    </footer>
+
+    <script>
+        // State
+        let currentData = null;
+        let refreshIntervalMs = 2000;
+        let refreshTimer = null;
+        let activeView = 'cards';
+        let searchQuery = '';
+
+        // DOM elements
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const cardsView = document.getElementById('cardsView');
+        const tableView = document.getElementById('tableView');
+        const sensorsTableBody = document.getElementById('sensorsTableBody');
+        const searchInput = document.getElementById('searchInput');
+        const btnViewCards = document.getElementById('btnViewCards');
+        const btnViewTable = document.getElementById('btnViewTable');
+        const selectInterval = document.getElementById('selectInterval');
+        const btnRefresh = document.getElementById('btnRefresh');
+        const btnResetMinMax = document.getElementById('btnResetMinMax');
+        const btnThemeToggle = document.getElementById('btnThemeToggle');
+        const footerHost = document.getElementById('footerHost');
+
+        footerHost.textContent = window.location.host || 'localhost:8085';
+
+        // Theme management (modern-web-guidance)
+        function initTheme() {
+            const saved = localStorage.getItem('lhm-theme');
+            if (saved) {
+                document.documentElement.setAttribute('data-theme', saved);
+            } else {
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+            }
+        }
+
+        btnThemeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme') || 'dark';
+            const next = current === 'dark' ? 'light' : 'dark';
+            document.documentElement.setAttribute('data-theme', next);
+            localStorage.setItem('lhm-theme', next);
+        });
+
+        initTheme();
+
+        // View toggle
+        btnViewCards.addEventListener('click', () => setView('cards'));
+        btnViewTable.addEventListener('click', () => setView('table'));
+
+        function setView(view) {
+            activeView = view;
+            if (view === 'cards') {
+                btnViewCards.classList.add('active');
+                btnViewTable.classList.remove('active');
+                cardsView.style.display = 'grid';
+                tableView.style.display = 'none';
+            } else {
+                btnViewTable.classList.add('active');
+                btnViewCards.classList.remove('active');
+                cardsView.style.display = 'none';
+                tableView.style.display = 'block';
+            }
+            render();
+        }
+
+        // Fetch Data from Server
+        async function fetchData() {
+            try {
+                const res = await fetch('data.json?t=' + Date.now());
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                currentData = await res.json();
+                statusDot.classList.remove('paused');
+                statusText.textContent = new Date().toLocaleTimeString('pt-PT');
+                render();
+            } catch (err) {
+                statusDot.classList.add('paused');
+                statusText.textContent = 'Erro de Ligação';
+                console.error('Falha ao carregar data.json:', err);
+            }
+        }
+
+        // Reset Min/Max
+        btnResetMinMax.addEventListener('click', async () => {
+            try {
+                await fetch('ResetAllMinMax');
+                await fetchData();
+            } catch (err) {
+                alert('Erro ao reiniciar Min/Max: ' + err);
+            }
+        });
+
+        // Interval & Refresh Controls
+        selectInterval.addEventListener('change', () => {
+            refreshIntervalMs = parseInt(selectInterval.value, 10);
+            restartTimer();
+        });
+
+        btnRefresh.addEventListener('click', () => {
+            fetchData();
+        });
+
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.toLowerCase().trim();
+            render();
+        });
+
+        function restartTimer() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            if (refreshIntervalMs > 0) {
+                statusDot.classList.remove('paused');
+                refreshTimer = setInterval(fetchData, refreshIntervalMs);
+            } else {
+                statusDot.classList.add('paused');
+                statusText.textContent = 'Pausado';
+            }
+        }
+
+        // Helper: Parse temperature string to number
+        function parseValNum(str) {
+            if (!str) return null;
+            const match = str.match(/([0-9]+[.,]?[0-9]*)/);
+            if (!match) return null;
+            return parseFloat(match[1].replace(',', '.'));
+        }
+
+        function getTempClass(num) {
+            if (num === null) return '';
+            if (num < 50) return 'temp-cool';
+            if (num < 80) return 'temp-warm';
+            return 'temp-hot';
+        }
+
+        function getProgressColor(num) {
+            if (num === null) return 'fill-cool';
+            if (num < 60) return 'fill-cool';
+            if (num < 85) return 'fill-warm';
+            return 'fill-hot';
+        }
+
+        // Render Controller
+        function render() {
+            if (!currentData || !currentData.Children || !currentData.Children[0]) return;
+            const rootComputer = currentData.Children[0];
+
+            if (activeView === 'cards') {
+                renderCards(rootComputer);
+            } else {
+                renderTable(rootComputer);
+            }
+        }
+
+        // Render Cards View
+        function renderCards(computerNode) {
+            const hardwareNodes = computerNode.Children || [];
+            let html = '';
+
+            hardwareNodes.forEach(hw => {
+                const hwName = hw.Text || 'Dispositivo';
+                const hwImg = hw.ImageURL || 'images_icon/computer.png';
+                const categories = hw.Children || [];
+
+                let sensorsToDisplay = [];
+
+                categories.forEach(cat => {
+                    const catName = cat.Text || '';
+                    const sensors = cat.Children || [];
+                    sensors.forEach(s => {
+                        const sName = s.Text || '';
+                        if (!searchQuery || sName.toLowerCase().includes(searchQuery) || hwName.toLowerCase().includes(searchQuery) || catName.toLowerCase().includes(searchQuery)) {
+                            sensorsToDisplay.push({
+                                category: catName,
+                                name: sName,
+                                value: s.Value,
+                                min: s.Min,
+                                max: s.Max,
+                                type: s.Type,
+                                rawVal: s.RawValue
+                            });
+                        }
+                    });
+                });
+
+                if (sensorsToDisplay.length === 0 && searchQuery) return;
+
+                html += `
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title-group">
+                            <img class="card-icon" src="${hwImg}" alt="">
+                            <span class="card-title" title="${hwName}">${hwName}</span>
+                        </div>
+                        <span class="card-badge">${sensorsToDisplay.length} sensores</span>
+                    </div>
+                    <div class="card-body">
+                `;
+
+                sensorsToDisplay.forEach(sensor => {
+                    const num = parseValNum(sensor.value);
+                    const isPercent = sensor.value && sensor.value.includes('%');
+                    const isTemp = sensor.value && sensor.value.includes('°C');
+                    const tempClass = isTemp ? getTempClass(num) : '';
+                    const fillClass = isPercent ? getProgressColor(num) : '';
+
+                    html += `
+                        <div class="sensor-row">
+                            <div class="sensor-label-val">
+                                <span class="sensor-name" title="${sensor.category}: ${sensor.name}">${sensor.name}</span>
+                                <div>
+                                    <span class="sensor-val ${tempClass}">${sensor.value || '-'}</span>
+                                    ${(sensor.min || sensor.max) ? `<span class="sensor-minmax">[${sensor.min || '-'} / ${sensor.max || '-'}]</span>` : ''}
+                                </div>
+                            </div>
+                            ${isPercent && num !== null ? `
+                                <div class="progress-bar-bg">
+                                    <div class="progress-bar-fill ${fillClass}" style="width: ${Math.min(100, Math.max(0, num))}%;"></div>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `;
+                });
+
+                html += `
+                    </div>
+                </div>
+                `;
+            });
+
+            cardsView.innerHTML = html || '<p style="color: var(--text-muted); padding: 2rem;">Nenhum sensor corresponde à pesquisa.</p>';
+        }
+
+        // Render Table View (Full Tree)
+        function renderTable(computerNode) {
+            let rowsHtml = '';
+            const hardwareNodes = computerNode.Children || [];
+
+            hardwareNodes.forEach(hw => {
+                const hwName = hw.Text || '';
+                const hwImg = hw.ImageURL || 'images_icon/computer.png';
+
+                rowsHtml += `
+                    <tr class="row-hardware">
+                        <td colspan="4">
+                            <div class="sensor-tree-title">
+                                <img src="${hwImg}" width="18" height="18" alt="">
+                                <span>${hwName}</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+
+                (hw.Children || []).forEach(cat => {
+                    const catName = cat.Text || '';
+                    const catImg = cat.ImageURL || 'images_icon/computer.png';
+
+                    rowsHtml += `
+                        <tr class="row-category">
+                            <td colspan="4" style="padding-left: 1.75rem;">
+                                <div class="sensor-tree-title">
+                                    <img src="${catImg}" width="16" height="16" alt="">
+                                    <span>${catName}</span>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+
+                    (cat.Children || []).forEach(sensor => {
+                        const sName = sensor.Text || '';
+                        if (searchQuery && !sName.toLowerCase().includes(searchQuery) && !hwName.toLowerCase().includes(searchQuery) && !catName.toLowerCase().includes(searchQuery)) {
+                            return;
+                        }
+
+                        const num = parseValNum(sensor.Value);
+                        const isTemp = sensor.Value && sensor.Value.includes('°C');
+                        const tempClass = isTemp ? getTempClass(num) : '';
+
+                        rowsHtml += `
+                            <tr>
+                                <td style="padding-left: 3rem;">${sName}</td>
+                                <td style="color: var(--text-muted);">${sensor.Min || '-'}</td>
+                                <td class="${tempClass}" style="font-weight: 700;">${sensor.Value || '-'}</td>
+                                <td style="color: var(--text-muted);">${sensor.Max || '-'}</td>
+                            </tr>
+                        `;
+                    });
+                });
+            });
+
+            sensorsTableBody.innerHTML = rowsHtml || '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-muted);">Nenhum resultado encontrado.</td></tr>';
+        }
+
+        // Initial Load
+        fetchData();
+        restartTimer();
+    </script>
+</body>
+</html>

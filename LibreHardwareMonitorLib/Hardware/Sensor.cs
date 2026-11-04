@@ -79,7 +79,8 @@ internal class Sensor : ISensor
         get { return _hardware; }
     }
 
-    public Identifier Identifier => field ??= new Identifier(_hardware.Identifier, SensorType.ToString().ToLowerInvariant(), Index.ToString(CultureInfo.InvariantCulture));
+    private Identifier _identifier;
+    public Identifier Identifier => _identifier ??= new Identifier(_hardware.Identifier, SensorType.ToString().ToLowerInvariant(), Index.ToString(CultureInfo.InvariantCulture));
 
     public int Index { get; }
 

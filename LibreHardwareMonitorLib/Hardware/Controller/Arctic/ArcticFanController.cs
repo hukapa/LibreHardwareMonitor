@@ -100,7 +100,10 @@ internal class ArcticFanController : Hardware
         }
 
         // update the sensor value
-        (control.Sensor as Sensor)?.Value = control.ControlMode == ControlMode.Software ? control.SoftwareValue : null;
+        if (control.Sensor is Sensor sensor)
+        {
+            sensor.Value = control.ControlMode == ControlMode.Software ? control.SoftwareValue : null;
+        }
     }
 
     private void Control_ControlModeChanged(Control control)
