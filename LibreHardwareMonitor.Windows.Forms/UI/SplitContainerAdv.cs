@@ -32,8 +32,17 @@ public class SplitContainerAdv : SplitContainer
         Graphics g = e.Graphics;
         Rectangle r = SplitterRectangle;
 
-        using (SolidBrush brush = new SolidBrush(_mouseOver ? Theme.Current.SplitterHoverColor : Theme.Current.SplitterColor))
+        using (SolidBrush brush = new SolidBrush(Theme.Current.SplitterColor))
             g.FillRectangle(brush, r);
+
+        // Fluent divider: a hairline across the splitter that turns into an accent bar on hover.
+        int thickness = _mouseOver ? Math.Max(2, LogicalToDeviceUnits(2)) : 1;
+        Rectangle line = Orientation == Orientation.Horizontal
+            ? new Rectangle(r.Left, r.Top + ((r.Height - thickness) / 2), r.Width, thickness)
+            : new Rectangle(r.Left + ((r.Width - thickness) / 2), r.Top, thickness, r.Height);
+
+        using (SolidBrush brush = new SolidBrush(_mouseOver ? Theme.Current.SplitterHoverColor : Theme.Current.SurfaceStrokeColor))
+            g.FillRectangle(brush, line);
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

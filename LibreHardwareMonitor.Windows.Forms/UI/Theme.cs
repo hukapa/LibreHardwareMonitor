@@ -136,7 +136,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
 
         // plot
         public virtual Color PlotBackgroundColor => SurfaceColor;
-        public virtual Color PlotBorderColor => StrongLineColor;
+        public virtual Color PlotBorderColor => SurfaceStrokeColor;
         public abstract Color[] PlotColorPalette { get; }
         public abstract Color PlotGridMajorColor { get; }
         public abstract Color PlotGridMinorColor { get; }
@@ -147,8 +147,8 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
         public virtual Color ScrollbarTrack => FluentStyle.Blend(SurfaceColor, ForegroundColor, 0.28);
 
         // splitter
-        public virtual Color SplitterColor => BackgroundColor;
-        public virtual Color SplitterHoverColor => SelectedBackgroundColor;
+        public virtual Color SplitterColor => SurfaceColor;
+        public virtual Color SplitterHoverColor => AccentColor;
 
         // tree
         public virtual Color TreeBackgroundColor => SurfaceColor;
