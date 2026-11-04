@@ -271,6 +271,12 @@ public sealed partial class MainForm
             if (treeView.Columns[i].IsVisible)
                 newWidth -= treeView.Columns[i].Width;
         }
+
+        // While the layout is being built the tree is transiently tiny; resizing the first
+        // column then would cascade into shrinking the value columns to their minimum.
+        if (newWidth < LogicalToDeviceUnits(80))
+            return;
+
         treeView.Columns[0].Width = newWidth;
     }
 

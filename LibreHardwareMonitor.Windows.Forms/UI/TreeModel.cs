@@ -17,6 +17,7 @@ public class TreeModel : ITreeModel
 {
     private readonly Node _root;
     private bool _forceVisible;
+    private Node _scope;
 
     public TreeModel()
     {
@@ -60,10 +61,32 @@ public class TreeModel : ITreeModel
         Node node = GetNode(treePath);
         if (node != null)
         {
-            return node.Nodes.Where(n => _forceVisible || n.IsVisible).ToList();
+            return node.Nodes.Where(n => (_forceVisible || n.IsVisible) && !IsOutOfScope(node, n)).ToList();
         }
 
         return Enumerable.Empty<Node>();
+    }
+
+    /// <summary>
+    /// Restricts the siblings of <see cref="Scope" /> to the scope node itself, so the view
+    /// shows a single hardware subtree. Null shows every node.
+    /// </summary>
+    public Node Scope
+    {
+        get { return _scope; }
+        set
+        {
+            if (value != _scope)
+            {
+                _scope = value;
+                OnStructureChanged(_root);
+            }
+        }
+    }
+
+    private bool IsOutOfScope(Node parent, Node node)
+    {
+        return _scope != null && _scope.Parent == parent && node != _scope;
     }
 
     public bool IsLeaf(TreePath treePath)
@@ -94,8 +117,24 @@ public class TreeModel : ITreeModel
     public event EventHandler<TreeModelEventArgs> NodesRemoved;
 #pragma warning restore 67
 
+    /// <summary>
+    /// Visibility events carry indices computed over all visible siblings; while a scope filters
+    /// those siblings the indices do not match the view, so the parent is reloaded instead.
+    /// </summary>
+    private bool ReloadIfScoped(Node parent)
+    {
+        if (_scope == null || parent == null || _scope.Parent != parent)
+            return false;
+
+        OnStructureChanged(parent);
+        return true;
+    }
+
     public void OnNodeChanged(Node parent, int index, Node node)
     {
+        if (ReloadIfScoped(parent))
+            return;
+
         if (parent != null)
         {
             TreePath path = GetPath(parent);
@@ -111,12 +150,18 @@ public class TreeModel : ITreeModel
 
     public void OnNodeInserted(Node parent, int index, Node node)
     {
+        if (ReloadIfScoped(parent))
+            return;
+
         TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent), new[] { index }, new object[] { node });
         NodesInserted?.Invoke(this, args);
     }
 
     public void OnNodeRemoved(Node parent, int index, Node node)
     {
+        if (ReloadIfScoped(parent))
+            return;
+
         TreeModelEventArgs args = new TreeModelEventArgs(GetPath(parent), new[] { index }, new object[] { node });
         NodesRemoved?.Invoke(this, args);
     }

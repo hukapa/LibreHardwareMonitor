@@ -83,6 +83,7 @@ public sealed partial class MainForm : Form
 
         // set the DockStyle here, to avoid conflicts with the MainMenu
         splitContainer.Dock = DockStyle.Fill;
+        InitializeShell();
 
         Font = FluentStyle.UiFont;
         treeView.Font = FluentStyle.UiFont;
@@ -95,8 +96,8 @@ public sealed partial class MainForm : Form
         {
             X = _settings.GetValue("mainForm.Location.X", Location.X),
             Y = _settings.GetValue("mainForm.Location.Y", Location.Y),
-            Width = _settings.GetValue("mainForm.Width", 470),
-            Height = _settings.GetValue("mainForm.Height", 640)
+            Width = _settings.GetValue("mainForm.Width", 1100),
+            Height = _settings.GetValue("mainForm.Height", 720)
         };
 
         Theme setTheme = Theme.All.FirstOrDefault(theme => _settings.GetValue("theme", "auto") == theme.Id);
@@ -705,6 +706,7 @@ public sealed partial class MainForm : Form
     {
         SubHardwareAdded(hardware, _root);
         PlotSelectionChanged(this, null);
+        RefreshShell();
     }
 
     private void HardwareRemoved(IHardware hardware)
@@ -723,12 +725,14 @@ public sealed partial class MainForm : Form
         }
 
         PlotSelectionChanged(this, null);
+        RefreshShell();
     }
 
 
     private void Timer_Tick(object sender, EventArgs e)
     {
         treeView.Invalidate();
+        UpdateShell();
         _systemTray.Redraw();
         _gadget?.Redraw();
 
@@ -786,8 +790,8 @@ public sealed partial class MainForm : Form
         {
             X = _settings.GetValue("mainForm.Location.X", Location.X),
             Y = _settings.GetValue("mainForm.Location.Y", Location.Y),
-            Width = _settings.GetValue("mainForm.Width", 470),
-            Height = _settings.GetValue("mainForm.Height", 640)
+            Width = _settings.GetValue("mainForm.Width", 1100),
+            Height = _settings.GetValue("mainForm.Height", 720)
         };
 
         Rectangle fullWorkingArea = new(int.MaxValue, int.MaxValue, int.MinValue, int.MinValue);
