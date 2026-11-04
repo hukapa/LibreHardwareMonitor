@@ -106,3 +106,14 @@
 * **Causas Raiz e Solucoes:**
   - **Bloqueio de 5s:** Em `HttpServer.cs`, `StopHttpListener()` invocava `_listenerTask?.Wait(TimeSpan.FromSeconds(5))` antes de chamar `_listener?.Stop()`. Como `GetContextAsync()` bloqueia de forma sincrona ate receber um novo socket HTTP ou ser explicitamente abortado, a thread de interface aguardava 5 segundos inteiros ate ao timeout. A ordem foi invertida: `_listener?.Stop()` e chamado em primeiro lugar com tratamento dedicado de `HttpListenerException`, libertando o socket em 0ms.
   - **Desambiguacao de Tarefas:** O script `Iniciar-LibreHardwareMonitor.bat` agora pesquisa especificamente pela tarefa dedicada `LibreHardwareMonitor-CrystalStudio` e executa a limpeza prévia de processos antigos (`taskkill /F /IM LibreHardwareMonitor.Windows.Forms.exe` e `LibreHardwareMonitor.exe`), assegurando que apenas o binario do fork e executado.
+
+---
+
+## 10. Fase 10: Redesenho do Dashboard Web com Iconografia SVG, Zero Emojis e Maxima Performance
+
+* **Objetivo:** Refazer a interface web completa em conformidade com as diretrizes `modern-web-guidance`, `debug-optimize-lcp` e `redesign-screen`, eliminando totalmente emojis e aplicando icones vetoriais SVG, seccao Hero de metricas vitais e isolamento de layout CSS.
+* **Acoes Efetuadas:**
+  - **Zero Emojis & Iconografia SVG:** Substituicao de qualquer representacao em emoji por icones SVG vetoriais leves integrados em `currentColor` para CPU, GPU, RAM, Motherboard, Discos, Ventiladores, Rede e controlo de temas.
+  - **Hero Highlights:** Adicao de 4 cartoes de topo com metricas imediatas de CPU (temperatura de pacote e carga total com barra), GPU (temperatura de nucleo e carga 3D), RAM (utilizacao e percentagem) e Armazenamento (temperatura maxima e unidades ativas).
+  - **Performance e LCP:** Implementacao de `content-visibility: auto` com `contain-intrinsic-size` em cada cartao para isolar o trabalho de renderizacao e garantir 60 FPS com consumo minimo de CPU.
+  - **Modern Web Guidance:** Suporte nativo a `<meta name="color-scheme" content="light dark">`, prevencao de FOUC via inline script, alternador tri-state (Auto, Claro, Escuro) persistente em `localStorage`, e comutador fluido entre Vista em Cartões e Vista em Tabela Técnica.

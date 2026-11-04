@@ -5,7 +5,10 @@ echo   Configuracao de Arranque Instantaneo sem Confirmacoes UAC
 echo =======================================================================
 echo.
 
-set "EXE_PATH=%~dp0bin\Publish\LibreHardwareMonitor.Windows.Forms.exe"
+set "EXE_PATH=%~dp0bin\Publish-v2\LibreHardwareMonitor.Windows.Forms.exe"
+if not exist "%EXE_PATH%" (
+    set "EXE_PATH=%~dp0bin\Publish\LibreHardwareMonitor.Windows.Forms.exe"
+)
 if not exist "%EXE_PATH%" (
     set "EXE_PATH=%~dp0bin\Publish-SingleFile\LibreHardwareMonitor.Windows.Forms.exe"
 )

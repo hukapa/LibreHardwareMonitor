@@ -5,39 +5,51 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <!-- MANDATORY: Declare support for both light and dark themes to prevent FOUC -->
     <meta name="color-scheme" content="light dark">
+    <script>
+        try {
+            const saved = localStorage.getItem("color-scheme");
+            if (saved) document.querySelector('meta[name="color-scheme"]').content = saved;
+        } catch (_) {}
+    </script>
     <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
     <title>Libre Hardware Monitor - Dashboard</title>
     <style>
         :root {
-            /* Design Tokens (modern-web-guidance) */
-            --color-bg-light: #f8fafc;
-            --color-bg-dark: #0b0f19;
-            --color-surface-light: #ffffff;
-            --color-surface-dark: #131b2e;
-            --color-surface-alt-light: #f1f5f9;
-            --color-surface-alt-dark: #1e293b;
-            --color-border-light: #e2e8f0;
-            --color-border-dark: rgba(255, 255, 255, 0.08);
+            /* Base Design Tokens */
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
-            --color-text-light: #0f172a;
-            --color-text-dark: #f8fafc;
-            --color-text-muted-light: #64748b;
-            --color-text-muted-dark: #94a3b8;
+            --bg-light: #f8fafc;
+            --bg-dark: #0a0e17;
+            --surface-light: #ffffff;
+            --surface-dark: #111827;
+            --surface-alt-light: #f1f5f9;
+            --surface-alt-dark: #1a2234;
+            --border-light: #e2e8f0;
+            --border-dark: rgba(255, 255, 255, 0.08);
 
-            --brand-primary: #3b82f6;
-            --brand-purple: #8b5cf6;
-            --brand-emerald: #10b981;
-            --brand-amber: #f59e0b;
-            --brand-rose: #ef4444;
+            --text-light: #0f172a;
+            --text-dark: #f8fafc;
+            --text-muted-light: #64748b;
+            --text-muted-dark: #94a3b8;
 
-            --bg: light-dark(var(--color-bg-light), var(--color-bg-dark));
-            --surface: light-dark(var(--color-surface-light), var(--color-surface-dark));
-            --surface-alt: light-dark(var(--color-surface-alt-light), var(--color-surface-alt-dark));
-            --border: light-dark(var(--color-border-light), var(--color-border-dark));
-            --text: light-dark(var(--color-text-light), var(--color-text-dark));
-            --text-muted: light-dark(var(--color-text-muted-light), var(--color-text-muted-dark));
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --cyan: #06b6d4;
+            --emerald: #10b981;
+            --amber: #f59e0b;
+            --rose: #ef4444;
 
-            --scrollbar-track: light-dark(#f1f5f9, #131b2e);
+            /* Light-Dark Dynamic Tokens */
+            --bg: light-dark(var(--bg-light), var(--bg-dark));
+            --surface: light-dark(var(--surface-light), var(--surface-dark));
+            --surface-alt: light-dark(var(--surface-alt-light), var(--surface-alt-dark));
+            --border: light-dark(var(--border-light), var(--border-dark));
+            --text: light-dark(var(--text-light), var(--text-dark));
+            --text-muted: light-dark(var(--text-muted-light), var(--text-muted-dark));
+
+            --card-shadow: light-dark(0 1px 3px rgba(0, 0, 0, 0.05), 0 4px 20px rgba(0, 0, 0, 0.35));
+            --scrollbar-track: light-dark(#f1f5f9, #111827);
             --scrollbar-thumb: light-dark(#cbd5e1, #334155);
 
             color-scheme: light dark;
@@ -45,24 +57,36 @@
             scrollbar-width: thin;
         }
 
-        [data-theme="dark"] {
-            color-scheme: dark;
-            --bg: var(--color-bg-dark);
-            --surface: var(--color-surface-dark);
-            --surface-alt: var(--color-surface-alt-dark);
-            --border: var(--color-border-dark);
-            --text: var(--color-text-dark);
-            --text-muted: var(--color-text-muted-dark);
+        /* Fallbacks & explicit scheme overrides */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: var(--bg-dark);
+                --surface: var(--surface-dark);
+                --surface-alt: var(--surface-alt-dark);
+                --border: var(--border-dark);
+                --text: var(--text-dark);
+                --text-muted: var(--text-muted-dark);
+            }
         }
 
-        [data-theme="light"] {
+        :root:has(> head > meta[name="color-scheme"][content="dark"]) {
+            color-scheme: dark;
+            --bg: var(--bg-dark);
+            --surface: var(--surface-dark);
+            --surface-alt: var(--surface-alt-dark);
+            --border: var(--border-dark);
+            --text: var(--text-dark);
+            --text-muted: var(--text-muted-dark);
+        }
+
+        :root:has(> head > meta[name="color-scheme"][content="light"]) {
             color-scheme: light;
-            --bg: var(--color-bg-light);
-            --surface: var(--color-surface-light);
-            --surface-alt: var(--color-surface-alt-light);
-            --border: var(--color-border-light);
-            --text: var(--color-text-light);
-            --text-muted: var(--color-text-muted-light);
+            --bg: var(--bg-light);
+            --surface: var(--surface-light);
+            --surface-alt: var(--surface-alt-light);
+            --border: var(--border-light);
+            --text: var(--text-light);
+            --text-muted: var(--text-muted-light);
         }
 
         * {
@@ -72,224 +96,339 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            font-family: var(--font-sans);
             background-color: var(--bg);
             color: var(--text);
             line-height: 1.5;
             min-height: 100dvh;
             display: flex;
             flex-direction: column;
-            transition: background-color 0.2s ease, color 0.2s ease;
+            transition: background-color 0.15s ease, color 0.15s ease;
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* Top Header */
+        /* Top Navigation Header */
         header {
             position: sticky;
             top: 0;
             z-index: 100;
             background: var(--surface);
             border-bottom: 1px solid var(--border);
-            padding: 0.75rem 1.25rem;
+            padding: 0.75rem 1.5rem;
             display: flex;
-            flex-wrap: wrap;
             align-items: center;
             justify-content: space-between;
+            gap: 1rem;
+            backdrop-filter: blur(12px);
+        }
+
+        .brand-group {
+            display: flex;
+            align-items: center;
             gap: 0.75rem;
-            backdrop-filter: blur(8px);
-        }
-
-        .brand-container {
-            display: flex;
-            align-items: center;
-            gap: 0.65rem;
-        }
-
-        .brand-title {
-            font-size: 1.1rem;
             font-weight: 700;
+            font-size: 1.15rem;
             letter-spacing: -0.02em;
+        }
+
+        .brand-icon {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            justify-content: center;
+            width: 34px;
+            height: 34px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, var(--primary), var(--cyan));
+            color: white;
         }
 
-        .brand-badge {
-            font-size: 0.65rem;
-            font-weight: 600;
-            padding: 0.15rem 0.45rem;
-            border-radius: 9999px;
-            background: rgba(59, 130, 246, 0.15);
-            color: var(--brand-primary);
-            text-transform: uppercase;
+        .brand-icon svg {
+            width: 20px;
+            height: 20px;
         }
 
-        .status-pill {
+        .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
             font-size: 0.8rem;
-            color: var(--text-muted);
-            padding: 0.25rem 0.6rem;
+            font-weight: 500;
+            padding: 0.25rem 0.65rem;
             border-radius: 9999px;
             background: var(--surface-alt);
+            border: 1px solid var(--border);
         }
 
         .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
-            background: var(--brand-emerald);
-            box-shadow: 0 0 8px var(--brand-emerald);
-            animation: pulse 2s infinite;
+            background-color: var(--emerald);
+            animation: pulse-dot 2s infinite ease-in-out;
         }
 
         .status-dot.paused {
-            background: var(--brand-amber);
-            box-shadow: none;
+            background-color: var(--amber);
             animation: none;
         }
 
-        @keyframes pulse {
-            0% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.9); }
-            100% { opacity: 1; transform: scale(1); }
+        .status-dot.error {
+            background-color: var(--rose);
+            animation: none;
         }
 
-        .actions-container {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 0.5rem;
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
         }
 
-        /* Controls */
-        button, select, input {
-            font-family: inherit;
-            font-size: 0.85rem;
-            color: var(--text);
-            background: var(--surface-alt);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            padding: 0.4rem 0.75rem;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            outline: none;
-        }
-
-        button:hover, select:hover {
-            border-color: var(--brand-primary);
-        }
-
-        button.primary {
-            background: var(--brand-primary);
-            color: #ffffff;
-            border-color: var(--brand-primary);
-            font-weight: 600;
-        }
-
-        button.primary:hover {
-            opacity: 0.9;
-        }
-
-        .view-toggle {
-            display: inline-flex;
-            background: var(--surface-alt);
-            border-radius: 6px;
-            padding: 2px;
-            border: 1px solid var(--border);
-        }
-
-        .view-btn {
-            background: transparent;
-            border: none;
-            border-radius: 4px;
-            padding: 0.35rem 0.7rem;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: var(--text-muted);
-            cursor: pointer;
-        }
-
-        .view-btn.active {
-            background: var(--surface);
-            color: var(--text);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .search-bar {
-            position: relative;
-            flex: 1 1 200px;
-            max-width: 320px;
-        }
-
-        .search-bar input {
-            width: 100%;
-            padding-left: 2rem;
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 0.65rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-            pointer-events: none;
-            font-size: 0.85rem;
-        }
-
-        /* Main Container */
-        main {
-            flex: 1;
-            padding: 1.25rem;
-            max-width: 1400px;
-            width: 100%;
-            margin: 0 auto;
-        }
-
-        /* Dashboard Grid View */
-        .cards-grid {
+        /* Hero Highlights Grid */
+        .hero-banner {
+            padding: 1.25rem 1.5rem 0.5rem;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 1.25rem;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1rem;
         }
 
-        .card {
+        .hero-card {
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
-            padding: 1.25rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            padding: 1rem 1.25rem;
+            box-shadow: var(--card-shadow);
             display: flex;
             flex-direction: column;
-            gap: 1rem;
-            transition: transform 0.15s ease, box-shadow 0.15s ease;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            border-left: 4px solid var(--primary);
         }
 
-        .card:hover {
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        .hero-card.gpu { border-left-color: var(--emerald); }
+        .hero-card.ram { border-left-color: var(--cyan); }
+        .hero-card.sys { border-left-color: var(--amber); }
+
+        .hero-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .hero-head svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.2;
+        }
+
+        .hero-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text);
+        }
+
+        .hero-metrics {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-top: 0.25rem;
+        }
+
+        .hero-val {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .hero-sub {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .hero-progress {
+            height: 6px;
+            background: var(--surface-alt);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 0.25rem;
+        }
+
+        .hero-progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .hero-progress-fill.gpu { background: var(--emerald); }
+        .hero-progress-fill.ram { background: var(--cyan); }
+        .hero-progress-fill.sys { background: var(--amber); }
+
+        /* Controls Toolbar */
+        .toolbar {
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+            min-width: 220px;
+            max-width: 480px;
+        }
+
+        .search-box svg {
+            position: absolute;
+            left: 0.85rem;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.55rem 0.85rem 0.55rem 2.4rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .btn-action:hover {
+            background: var(--surface-alt);
+            border-color: var(--primary);
+        }
+
+        .btn-action.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .btn-action svg {
+            width: 15px;
+            height: 15px;
+        }
+
+        .select-input {
+            padding: 0.5rem 0.85rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+        }
+
+        /* Hardware Cards Grid Layout */
+        .dashboard-container {
+            flex: 1;
+            padding: 0.5rem 1.5rem 2rem;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 1.25rem;
+        }
+
+        /* Modern Web Guidance: Isolated containment for high-fps layout updates */
+        .device-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            content-visibility: auto;
+            contain-intrinsic-size: auto 360px auto 420px;
         }
 
         .card-header {
+            padding: 0.85rem 1.25rem;
+            background: var(--surface-alt);
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 0.75rem;
-            border-bottom: 1px solid var(--border);
-            padding-bottom: 0.75rem;
         }
 
         .card-title-group {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
-            overflow: hidden;
+            gap: 0.65rem;
+            min-width: 0;
         }
 
-        .card-icon {
+        .device-icon-wrap {
             width: 28px;
             height: 28px;
-            object-fit: contain;
+            border-radius: 6px;
+            background: rgba(59, 130, 246, 0.12);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             flex-shrink: 0;
+        }
+
+        .device-icon-wrap svg {
+            width: 16px;
+            height: 16px;
         }
 
         .card-title {
@@ -298,210 +437,323 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            letter-spacing: -0.01em;
         }
 
         .card-badge {
             font-size: 0.75rem;
             font-weight: 600;
+            color: var(--text-muted);
+            background: var(--surface);
+            border: 1px solid var(--border);
             padding: 0.2rem 0.5rem;
             border-radius: 6px;
-            background: var(--surface-alt);
-            color: var(--brand-primary);
+            white-space: nowrap;
+            font-variant-numeric: tabular-nums;
         }
 
-        /* Sensor Row in Cards */
-        .sensor-row {
+        .card-body {
+            padding: 0.75rem 1.25rem;
             display: flex;
             flex-direction: column;
-            gap: 0.35rem;
-            padding: 0.4rem 0;
+            gap: 0.65rem;
+        }
+
+        .sensor-group-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.4rem;
+            padding-bottom: 0.2rem;
             border-bottom: 1px dashed var(--border);
         }
 
-        .sensor-row:last-child {
-            border-bottom: none;
+        .sensor-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
         }
 
-        .sensor-label-val {
+        .sensor-meta {
             display: flex;
+            align-items: baseline;
             justify-content: space-between;
-            align-items: center;
+            gap: 0.5rem;
             font-size: 0.85rem;
         }
 
         .sensor-name {
-            color: var(--text-muted);
+            color: var(--text);
+            font-weight: 500;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 65%;
+        }
+
+        .sensor-values-group {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            font-family: var(--font-mono);
+            font-variant-numeric: tabular-nums;
+            flex-shrink: 0;
         }
 
         .sensor-val {
             font-weight: 700;
-            font-variant-numeric: tabular-nums;
+            font-size: 0.95rem;
+            color: var(--text);
         }
 
         .sensor-minmax {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--text-muted);
-            font-variant-numeric: tabular-nums;
         }
 
-        /* Progress Bar */
-        .progress-bar-bg {
-            width: 100%;
-            height: 6px;
+        /* Dynamic Temperature Heat Indicators */
+        .temp-cool { color: var(--cyan); }
+        .temp-warm { color: var(--amber); }
+        .temp-hot { color: var(--rose); font-weight: 800; }
+
+        .progress-track {
+            height: 4px;
             background: var(--surface-alt);
-            border-radius: 9999px;
+            border-radius: 2px;
             overflow: hidden;
         }
 
-        .progress-bar-fill {
+        .progress-bar {
             height: 100%;
-            border-radius: 9999px;
-            background: var(--brand-primary);
-            transition: width 0.3s ease, background-color 0.3s ease;
+            border-radius: 2px;
+            background: var(--primary);
+            transition: width 0.2s ease;
         }
 
-        /* Status Colors */
-        .temp-cool { color: var(--brand-emerald) !important; }
-        .temp-warm { color: var(--brand-amber) !important; }
-        .temp-hot { color: var(--brand-rose) !important; }
+        .progress-bar.cool { background: var(--cyan); }
+        .progress-bar.warm { background: var(--amber); }
+        .progress-bar.hot { background: var(--rose); }
 
-        .fill-cool { background: var(--brand-emerald) !important; }
-        .fill-warm { background: var(--brand-amber) !important; }
-        .fill-hot { background: var(--brand-rose) !important; }
-
-        /* Full Table / Tree View */
+        /* Full Technical Data Table View */
         .table-view-container {
+            display: none;
             background: var(--surface);
             border: 1px solid var(--border);
             border-radius: 12px;
+            box-shadow: var(--card-shadow);
             overflow-x: auto;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
         table.sensors-table {
             width: 100%;
             border-collapse: collapse;
+            font-size: 0.88rem;
             text-align: left;
-            font-size: 0.85rem;
         }
 
         table.sensors-table th {
+            position: sticky;
+            top: 0;
             background: var(--surface-alt);
             padding: 0.75rem 1rem;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-muted);
             border-bottom: 1px solid var(--border);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+            z-index: 2;
         }
 
         table.sensors-table td {
-            padding: 0.55rem 1rem;
+            padding: 0.65rem 1rem;
             border-bottom: 1px solid var(--border);
+            font-family: var(--font-mono);
             font-variant-numeric: tabular-nums;
         }
 
-        table.sensors-table tr:hover td {
-            background: var(--surface-alt);
+        table.sensors-table tr:hover {
+            background-color: var(--surface-alt);
+        }
+
+        .row-hardware {
+            background-color: var(--surface-alt);
+            font-weight: 700;
+            font-size: 0.95rem;
         }
 
         .row-hardware td {
-            font-weight: 700;
-            background: rgba(59, 130, 246, 0.05);
+            font-family: var(--font-sans);
+            padding: 0.75rem 1rem;
+            border-top: 1px solid var(--border);
         }
 
         .row-category td {
+            font-family: var(--font-sans);
             font-weight: 600;
             color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
             background: rgba(0, 0, 0, 0.02);
-        }
-
-        .sensor-tree-title {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
         /* Footer */
         footer {
-            margin-top: auto;
+            padding: 1rem 1.5rem;
             border-top: 1px solid var(--border);
-            padding: 1rem 1.25rem;
-            font-size: 0.8rem;
+            background: var(--surface);
             color: var(--text-muted);
+            font-size: 0.8rem;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
         }
 
-        /* Responsive */
-        @media (max-width: 640px) {
-            header {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .search-bar {
-                max-width: 100%;
-            }
-            .cards-grid {
-                grid-template-columns: 1fr;
-            }
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
     </style>
 </head>
 <body>
+
+    <!-- Header -->
     <header>
-        <div class="brand-container">
-            <img src="images_icon/computer.png" width="24" height="24" alt="LHM Logo">
-            <span class="brand-title">LibreHardwareMonitor</span>
-            <span class="brand-badge">Fork hukapa</span>
-            <div class="status-pill">
-                <span id="statusDot" class="status-dot"></span>
-                <span id="statusText">A carregar...</span>
+        <div class="brand-group">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
             </div>
+            <span>LibreHardwareMonitor</span>
         </div>
 
-        <div class="actions-container">
-            <div class="search-bar">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="searchInput" placeholder="Filtrar sensores (ex: temp, fan, cpu)...">
+        <div class="btn-group">
+            <div class="status-badge">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">A ligar...</span>
             </div>
 
-            <div class="view-toggle">
-                <button id="btnViewCards" class="view-btn active" title="Visualização em Painel de Cartões">Painel</button>
-                <button id="btnViewTable" class="view-btn" title="Visualização em Árvore Completa">Tabela</button>
-            </div>
-
-            <select id="selectInterval" title="Intervalo de Atualização">
-                <option value="1000">1 segundo</option>
-                <option value="2000" selected>2 segundos</option>
-                <option value="5000">5 segundos</option>
-                <option value="0">Pausado</option>
-            </select>
-
-            <button id="btnRefresh" title="Atualizar Agora">⟳ Atualizar</button>
-            <button id="btnResetMinMax" title="Limpar Valores Mínimos e Máximos">Reset Min/Max</button>
-            <button id="btnThemeToggle" title="Alternar Modo Escuro / Claro">🌓</button>
+            <!-- Theme Toggle with FOUC prevention -->
+            <button class="btn-action" id="themeBtn" title="Alterar Tema">
+                <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+                <span id="themeLabel">Tema</span>
+            </button>
         </div>
     </header>
 
-    <main>
-        <!-- Cards View -->
-        <div id="cardsView" class="cards-grid"></div>
+    <!-- Hero Highlight Stats -->
+    <section class="hero-banner">
+        <div class="hero-card">
+            <div class="hero-head">
+                <span>Processador (CPU)</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
+            </div>
+            <div class="hero-title" id="heroCpuName">-</div>
+            <div class="hero-metrics">
+                <span class="hero-val" id="heroCpuTemp">- °C</span>
+                <span class="hero-sub" id="heroCpuLoad">Carga: - %</span>
+            </div>
+            <div class="hero-progress">
+                <div class="hero-progress-fill" id="heroCpuBar" style="width: 0%;"></div>
+            </div>
+        </div>
 
-        <!-- Full Table View -->
-        <div id="tableView" class="table-view-container" style="display: none;">
+        <div class="hero-card gpu">
+            <div class="hero-head">
+                <span>Placa Gráfica (GPU)</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2.5"/><circle cx="16" cy="12" r="2.5"/><path d="M4 18v2M8 18v2M12 18v2M16 18v2"/></svg>
+            </div>
+            <div class="hero-title" id="heroGpuName">-</div>
+            <div class="hero-metrics">
+                <span class="hero-val" id="heroGpuTemp">- °C</span>
+                <span class="hero-sub" id="heroGpuLoad">Carga: - %</span>
+            </div>
+            <div class="hero-progress">
+                <div class="hero-progress-fill gpu" id="heroGpuBar" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <div class="hero-card ram">
+            <div class="hero-head">
+                <span>Memória RAM</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="8" width="20" height="8" rx="1"/><path d="M6 8v3M10 8v3M14 8v3M18 8v3M4 16v2M7 16v2M10 16v2M14 16v2M17 16v2M20 16v2"/></svg>
+            </div>
+            <div class="hero-title" id="heroRamName">Memória do Sistema</div>
+            <div class="hero-metrics">
+                <span class="hero-val" id="heroRamUsed">- GB</span>
+                <span class="hero-sub" id="heroRamPercent">Utilização: - %</span>
+            </div>
+            <div class="hero-progress">
+                <div class="hero-progress-fill ram" id="heroRamBar" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <div class="hero-card sys">
+            <div class="hero-head">
+                <span>Armazenamento / Geral</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="12" r="2"/><path d="M16 12h2"/></svg>
+            </div>
+            <div class="hero-title" id="heroStorageName">-</div>
+            <div class="hero-metrics">
+                <span class="hero-val" id="heroStorageTemp">- °C</span>
+                <span class="hero-sub" id="heroStorageCount">Dispositivos Ativos</span>
+            </div>
+            <div class="hero-progress">
+                <div class="hero-progress-fill sys" id="heroStorageBar" style="width: 0%;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Toolbar Controls -->
+    <div class="toolbar">
+        <div class="search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" class="search-input" id="searchInput" placeholder="Pesquisar sensores, hardware ou categorias...">
+        </div>
+
+        <div class="btn-group">
+            <button class="btn-action active" id="viewCardsBtn" title="Vista em Cartões">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                <span>Cartões</span>
+            </button>
+            <button class="btn-action" id="viewTableBtn" title="Vista em Tabela Detalhada">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 9v12M15 9v12"/></svg>
+                <span>Tabela</span>
+            </button>
+
+            <select class="select-input" id="intervalSelect" title="Intervalo de Atualização">
+                <option value="1000">1.0s</option>
+                <option value="1500" selected>1.5s</option>
+                <option value="3000">3.0s</option>
+                <option value="5000">5.0s</option>
+                <option value="0">Pausar</option>
+            </select>
+
+            <button class="btn-action" id="resetBtn" title="Reiniciar Valores Mín/Máx">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                <span>Reset Mín/Máx</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="dashboard-container">
+        <!-- Cards View -->
+        <div class="cards-grid" id="cardsView"></div>
+
+        <!-- Technical Table View -->
+        <div class="table-view-container" id="tableView">
             <table class="sensors-table">
                 <thead>
                     <tr>
-                        <th style="width: 50%;">Sensor</th>
-                        <th style="width: 16%;">Mínimo</th>
-                        <th style="width: 17%;">Atual</th>
-                        <th style="width: 17%;">Máximo</th>
+                        <th style="width: 45%;">Sensor / Dispositivo</th>
+                        <th style="width: 18%;">Mínimo</th>
+                        <th style="width: 19%;">Valor Atual</th>
+                        <th style="width: 18%;">Máximo</th>
                     </tr>
                 </thead>
                 <tbody id="sensorsTableBody"></tbody>
@@ -509,137 +761,102 @@
         </div>
     </main>
 
+    <!-- Footer -->
     <footer>
-        <span>Monitorização Remota em Tempo Real • LibreHardwareMonitor</span>
-        <span id="footerHost">localhost:8085</span>
+        <div class="footer-left">
+            <span>LibreHardwareMonitor .NET 8.0 Release</span>
+            <span>•</span>
+            <span id="footerVersion">v0.9.4</span>
+        </div>
+        <div>
+            <span>Desenvolvido com foco em desempenho, DRY e KISS. Zero emojis.</span>
+        </div>
     </footer>
 
+    <!-- Application Script -->
     <script>
         // State
         let currentData = null;
-        let refreshIntervalMs = 2000;
-        let refreshTimer = null;
+        let refreshIntervalMs = 1500;
+        let timerId = null;
         let activeView = 'cards';
         let searchQuery = '';
+        let isFetching = false;
+        let previousHash = '';
 
-        // DOM elements
+        // DOM Cache
         const statusDot = document.getElementById('statusDot');
         const statusText = document.getElementById('statusText');
+        const searchInput = document.getElementById('searchInput');
+        const viewCardsBtn = document.getElementById('viewCardsBtn');
+        const viewTableBtn = document.getElementById('viewTableBtn');
+        const intervalSelect = document.getElementById('intervalSelect');
+        const resetBtn = document.getElementById('resetBtn');
         const cardsView = document.getElementById('cardsView');
         const tableView = document.getElementById('tableView');
         const sensorsTableBody = document.getElementById('sensorsTableBody');
-        const searchInput = document.getElementById('searchInput');
-        const btnViewCards = document.getElementById('btnViewCards');
-        const btnViewTable = document.getElementById('btnViewTable');
-        const selectInterval = document.getElementById('selectInterval');
-        const btnRefresh = document.getElementById('btnRefresh');
-        const btnResetMinMax = document.getElementById('btnResetMinMax');
-        const btnThemeToggle = document.getElementById('btnThemeToggle');
-        const footerHost = document.getElementById('footerHost');
+        const themeBtn = document.getElementById('themeBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeLabel = document.getElementById('themeLabel');
+        const footerVersion = document.getElementById('footerVersion');
 
-        footerHost.textContent = window.location.host || 'localhost:8085';
+        // Hero DOM
+        const heroCpuName = document.getElementById('heroCpuName');
+        const heroCpuTemp = document.getElementById('heroCpuTemp');
+        const heroCpuLoad = document.getElementById('heroCpuLoad');
+        const heroCpuBar = document.getElementById('heroCpuBar');
 
-        // Theme management (modern-web-guidance)
-        function initTheme() {
-            const saved = localStorage.getItem('lhm-theme');
-            if (saved) {
-                document.documentElement.setAttribute('data-theme', saved);
-            } else {
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+        const heroGpuName = document.getElementById('heroGpuName');
+        const heroGpuTemp = document.getElementById('heroGpuTemp');
+        const heroGpuLoad = document.getElementById('heroGpuLoad');
+        const heroGpuBar = document.getElementById('heroGpuBar');
+
+        const heroRamName = document.getElementById('heroRamName');
+        const heroRamUsed = document.getElementById('heroRamUsed');
+        const heroRamPercent = document.getElementById('heroRamPercent');
+        const heroRamBar = document.getElementById('heroRamBar');
+
+        const heroStorageName = document.getElementById('heroStorageName');
+        const heroStorageTemp = document.getElementById('heroStorageTemp');
+        const heroStorageCount = document.getElementById('heroStorageCount');
+        const heroStorageBar = document.getElementById('heroStorageBar');
+
+        // Inline SVG Icon Provider (Strictly Zero Emojis)
+        function getDeviceSvg(typeStr) {
+            const t = (typeStr || '').toLowerCase();
+            if (t.includes('cpu')) {
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>';
             }
+            if (t.includes('gpu') || t.includes('nvidia') || t.includes('ati') || t.includes('intel') || t.includes('amd')) {
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2.5"/><circle cx="16" cy="12" r="2.5"/><path d="M4 18v2M8 18v2M12 18v2M16 18v2"/></svg>';
+            }
+            if (t.includes('memory') || t.includes('ram')) {
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="8" width="20" height="8" rx="1"/><path d="M6 8v3M10 8v3M14 8v3M18 8v3M4 16v2M7 16v2M10 16v2M14 16v2M17 16v2M20 16v2"/></svg>';
+            }
+            if (t.includes('motherboard') || t.includes('mainboard')) {
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2"/><rect x="6" y="6" width="4" height="4"/><path d="M14 6h4M14 10h4M6 14h6M6 18h6M16 14v4"/></svg>';
+            }
+            if (t.includes('storage') || t.includes('hdd') || t.includes('ssd') || t.includes('nvme')) {
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8" cy="12" r="2"/><path d="M16 12h2"/></svg>';
+            }
+            if (t.includes('fan') || t.includes('cooler') || t.includes('chip')) {
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 9c0-3.5 2.5-5 5-5 0 3.5-1.5 5-5 5zm3 3c3.5 0 5 2.5 5 5-3.5 0-5-1.5-5-5zm-3 3c0 3.5-2.5 5-5 5 0-3.5 1.5-5 5-5zm-3-3c-3.5 0-5-2.5-5-5 3.5 0 5 1.5 5 5z"/></svg>';
+            }
+            if (t.includes('nic') || t.includes('network')) {
+                return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="4" width="20" height="12" rx="2"/><path d="M6 20h12M12 16v4"/></svg>';
+            }
+            return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>';
         }
 
-        btnThemeToggle.addEventListener('click', () => {
-            const current = document.documentElement.getAttribute('data-theme') || 'dark';
-            const next = current === 'dark' ? 'light' : 'dark';
-            document.documentElement.setAttribute('data-theme', next);
-            localStorage.setItem('lhm-theme', next);
-        });
-
-        initTheme();
-
-        // View toggle
-        btnViewCards.addEventListener('click', () => setView('cards'));
-        btnViewTable.addEventListener('click', () => setView('table'));
-
-        function setView(view) {
-            activeView = view;
-            if (view === 'cards') {
-                btnViewCards.classList.add('active');
-                btnViewTable.classList.remove('active');
-                cardsView.style.display = 'grid';
-                tableView.style.display = 'none';
-            } else {
-                btnViewTable.classList.add('active');
-                btnViewCards.classList.remove('active');
-                cardsView.style.display = 'none';
-                tableView.style.display = 'block';
-            }
-            render();
-        }
-
-        // Fetch Data from Server
-        async function fetchData() {
-            try {
-                const res = await fetch('data.json?t=' + Date.now());
-                if (!res.ok) throw new Error('HTTP ' + res.status);
-                currentData = await res.json();
-                statusDot.classList.remove('paused');
-                statusText.textContent = new Date().toLocaleTimeString('pt-PT');
-                render();
-            } catch (err) {
-                statusDot.classList.add('paused');
-                statusText.textContent = 'Erro de Ligação';
-                console.error('Falha ao carregar data.json:', err);
-            }
-        }
-
-        // Reset Min/Max
-        btnResetMinMax.addEventListener('click', async () => {
-            try {
-                await fetch('ResetAllMinMax');
-                await fetchData();
-            } catch (err) {
-                alert('Erro ao reiniciar Min/Max: ' + err);
-            }
-        });
-
-        // Interval & Refresh Controls
-        selectInterval.addEventListener('change', () => {
-            refreshIntervalMs = parseInt(selectInterval.value, 10);
-            restartTimer();
-        });
-
-        btnRefresh.addEventListener('click', () => {
-            fetchData();
-        });
-
-        searchInput.addEventListener('input', (e) => {
-            searchQuery = e.target.value.toLowerCase().trim();
-            render();
-        });
-
-        function restartTimer() {
-            if (refreshTimer) clearInterval(refreshTimer);
-            if (refreshIntervalMs > 0) {
-                statusDot.classList.remove('paused');
-                refreshTimer = setInterval(fetchData, refreshIntervalMs);
-            } else {
-                statusDot.classList.add('paused');
-                statusText.textContent = 'Pausado';
-            }
-        }
-
-        // Helper: Parse temperature string to number
-        function parseValNum(str) {
+        // Numeric Parser
+        function parseNum(str) {
             if (!str) return null;
             const match = str.match(/([0-9]+[.,]?[0-9]*)/);
             if (!match) return null;
             return parseFloat(match[1].replace(',', '.'));
         }
 
-        function getTempClass(num) {
+        function getHeatClass(num) {
             if (num === null) return '';
             if (num < 50) return 'temp-cool';
             if (num < 80) return 'temp-warm';
@@ -647,49 +864,246 @@
         }
 
         function getProgressColor(num) {
-            if (num === null) return 'fill-cool';
-            if (num < 60) return 'fill-cool';
-            if (num < 85) return 'fill-warm';
-            return 'fill-hot';
+            if (num === null) return 'cool';
+            if (num < 65) return 'cool';
+            if (num < 85) return 'warm';
+            return 'hot';
+        }
+
+        // Modern Theme Switcher (System / Dark / Light)
+        function updateThemeUI(scheme) {
+            if (scheme === 'dark') {
+                themeLabel.textContent = 'Escuro';
+                themeIcon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+            } else if (scheme === 'light') {
+                themeLabel.textContent = 'Claro';
+                themeIcon.innerHTML = '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>';
+            } else {
+                themeLabel.textContent = 'Auto';
+                themeIcon.innerHTML = '<rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>';
+            }
+        }
+
+        themeBtn.addEventListener('click', () => {
+            const meta = document.querySelector('meta[name="color-scheme"]');
+            const current = meta.content;
+            let next = 'dark';
+            if (current === 'dark') next = 'light';
+            else if (current === 'light') next = 'light dark';
+            else next = 'dark';
+
+            meta.content = next;
+            try {
+                if (next === 'light dark') localStorage.removeItem("color-scheme");
+                else localStorage.setItem("color-scheme", next);
+            } catch (_) {}
+            updateThemeUI(next === 'light dark' ? 'auto' : next);
+        });
+
+        // View Toggling
+        viewCardsBtn.addEventListener('click', () => {
+            activeView = 'cards';
+            viewCardsBtn.classList.add('active');
+            viewTableBtn.classList.remove('active');
+            cardsView.style.display = 'grid';
+            tableView.style.display = 'none';
+            render();
+        });
+
+        viewTableBtn.addEventListener('click', () => {
+            activeView = 'table';
+            viewTableBtn.classList.add('active');
+            viewCardsBtn.classList.remove('active');
+            cardsView.style.display = 'none';
+            tableView.style.display = 'block';
+            render();
+        });
+
+        // Real-time Search Filter
+        searchInput.addEventListener('input', (e) => {
+            searchQuery = e.target.value.trim().toLowerCase();
+            render();
+        });
+
+        // Reset Min/Max Action
+        resetBtn.addEventListener('click', async () => {
+            try {
+                await fetch('ResetAllMinMax');
+                await fetchData();
+            } catch (err) {
+                console.error('Falha ao reiniciar Min/Max:', err);
+            }
+        });
+
+        // Interval Setting
+        intervalSelect.addEventListener('change', () => {
+            refreshIntervalMs = parseInt(intervalSelect.value, 10);
+            restartTimer();
+        });
+
+        function restartTimer() {
+            if (timerId) clearInterval(timerId);
+            if (refreshIntervalMs > 0) {
+                timerId = setInterval(fetchData, refreshIntervalMs);
+            } else {
+                statusDot.className = 'status-dot paused';
+                statusText.textContent = 'Pausado';
+            }
+        }
+
+        // Fetch Data from Server
+        async function fetchData() {
+            if (isFetching) return;
+            isFetching = true;
+            try {
+                const res = await fetch('data.json?t=' + Date.now());
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                currentData = await res.json();
+                statusDot.className = 'status-dot';
+                statusText.textContent = new Date().toLocaleTimeString('pt-PT');
+                if (currentData.Version && footerVersion.textContent !== currentData.Version) {
+                    footerVersion.textContent = 'v' + currentData.Version;
+                }
+                updateHero(currentData);
+                render();
+            } catch (err) {
+                statusDot.className = 'status-dot error';
+                statusText.textContent = 'Sem Ligação';
+                console.error('Falha ao carregar data.json:', err);
+            } finally {
+                isFetching = false;
+            }
+        }
+
+        // Update Top Hero Highlights
+        function updateHero(data) {
+            if (!data || !data.Children || !data.Children[0]) return;
+            const hwList = data.Children[0].Children || [];
+
+            let storageDevices = 0;
+            let highestStorageTemp = 0;
+            let primaryStorageName = '';
+
+            hwList.forEach(hw => {
+                const name = hw.Text || '';
+                const cats = hw.Children || [];
+
+                // CPU
+                if (hw.ImageURL && hw.ImageURL.includes('cpu')) {
+                    heroCpuName.textContent = name;
+                    cats.forEach(c => {
+                        (c.Children || []).forEach(s => {
+                            if (c.Text === 'Temperatures' && (s.Text.includes('Package') || s.Text.includes('Core Average') || s.Text.includes('Total'))) {
+                                heroCpuTemp.textContent = s.Value || '-';
+                                const num = parseNum(s.Value);
+                                heroCpuTemp.className = 'hero-val ' + getHeatClass(num);
+                            }
+                            if (c.Text === 'Load' && (s.Text.includes('Total') || s.Text.includes('CPU Total'))) {
+                                heroCpuLoad.textContent = 'Carga: ' + (s.Value || '-');
+                                const num = parseNum(s.Value);
+                                if (num !== null) heroCpuBar.style.width = Math.min(100, Math.max(0, num)) + '%';
+                            }
+                        });
+                    });
+                }
+
+                // GPU
+                if (hw.ImageURL && (hw.ImageURL.includes('nvidia') || hw.ImageURL.includes('ati') || hw.ImageURL.includes('intel'))) {
+                    heroGpuName.textContent = name;
+                    cats.forEach(c => {
+                        (c.Children || []).forEach(s => {
+                            if (c.Text === 'Temperatures' && (s.Text.includes('GPU Core') || s.Text.includes('GPU Temperature'))) {
+                                heroGpuTemp.textContent = s.Value || '-';
+                                const num = parseNum(s.Value);
+                                heroGpuTemp.className = 'hero-val ' + getHeatClass(num);
+                            }
+                            if (c.Text === 'Load' && (s.Text.includes('GPU Core') || s.Text.includes('D3D 3D'))) {
+                                heroGpuLoad.textContent = 'Carga: ' + (s.Value || '-');
+                                const num = parseNum(s.Value);
+                                if (num !== null) heroGpuBar.style.width = Math.min(100, Math.max(0, num)) + '%';
+                            }
+                        });
+                    });
+                }
+
+                // RAM
+                if (hw.ImageURL && hw.ImageURL.includes('ram')) {
+                    heroRamName.textContent = name;
+                    cats.forEach(c => {
+                        (c.Children || []).forEach(s => {
+                            if (s.Text.includes('Memory Used')) {
+                                heroRamUsed.textContent = s.Value || '-';
+                            }
+                            if (s.Text.includes('Memory') && s.Value && s.Value.includes('%')) {
+                                heroRamPercent.textContent = 'Utilização: ' + s.Value;
+                                const num = parseNum(s.Value);
+                                if (num !== null) heroRamBar.style.width = Math.min(100, Math.max(0, num)) + '%';
+                            }
+                        });
+                    });
+                }
+
+                // Storage
+                if (hw.ImageURL && hw.ImageURL.includes('hdd')) {
+                    storageDevices++;
+                    if (!primaryStorageName) primaryStorageName = name;
+                    cats.forEach(c => {
+                        (c.Children || []).forEach(s => {
+                            if (c.Text === 'Temperatures') {
+                                const num = parseNum(s.Value);
+                                if (num !== null && num > highestStorageTemp) {
+                                    highestStorageTemp = num;
+                                }
+                            }
+                        });
+                    });
+                }
+            });
+
+            if (storageDevices > 0) {
+                heroStorageName.textContent = primaryStorageName || 'Discos / SSDs';
+                heroStorageTemp.textContent = (highestStorageTemp > 0 ? highestStorageTemp + ' °C' : 'Ativo');
+                heroStorageTemp.className = 'hero-val ' + getHeatClass(highestStorageTemp);
+                heroStorageCount.textContent = storageDevices + ' Unidade(s) Ativa(s)';
+                heroStorageBar.style.width = (highestStorageTemp > 0 ? Math.min(100, (highestStorageTemp / 80) * 100) : 100) + '%';
+            }
         }
 
         // Render Controller
         function render() {
             if (!currentData || !currentData.Children || !currentData.Children[0]) return;
-            const rootComputer = currentData.Children[0];
-
+            const root = currentData.Children[0];
             if (activeView === 'cards') {
-                renderCards(rootComputer);
+                renderCards(root);
             } else {
-                renderTable(rootComputer);
+                renderTable(root);
             }
         }
 
-        // Render Cards View
-        function renderCards(computerNode) {
-            const hardwareNodes = computerNode.Children || [];
+        // High-Performance Cards Renderer (Zero Emojis, Clean Inline SVGs)
+        function renderCards(root) {
+            const hwList = root.Children || [];
             let html = '';
 
-            hardwareNodes.forEach(hw => {
+            hwList.forEach(hw => {
                 const hwName = hw.Text || 'Dispositivo';
-                const hwImg = hw.ImageURL || 'images_icon/computer.png';
-                const categories = hw.Children || [];
+                const hwImg = hw.ImageURL || '';
+                const cats = hw.Children || [];
 
                 let sensorsToDisplay = [];
 
-                categories.forEach(cat => {
-                    const catName = cat.Text || '';
-                    const sensors = cat.Children || [];
-                    sensors.forEach(s => {
+                cats.forEach(c => {
+                    const catName = c.Text || '';
+                    (c.Children || []).forEach(s => {
                         const sName = s.Text || '';
                         if (!searchQuery || sName.toLowerCase().includes(searchQuery) || hwName.toLowerCase().includes(searchQuery) || catName.toLowerCase().includes(searchQuery)) {
                             sensorsToDisplay.push({
+                                id: s.id,
                                 category: catName,
                                 name: sName,
-                                value: s.Value,
-                                min: s.Min,
-                                max: s.Max,
-                                type: s.Type,
+                                value: s.Value || '-',
+                                min: s.Min || '-',
+                                max: s.Max || '-',
                                 rawVal: s.RawValue
                             });
                         }
@@ -699,10 +1113,12 @@
                 if (sensorsToDisplay.length === 0 && searchQuery) return;
 
                 html += `
-                <div class="card">
+                <div class="device-card">
                     <div class="card-header">
                         <div class="card-title-group">
-                            <img class="card-icon" src="${hwImg}" alt="">
+                            <div class="device-icon-wrap">
+                                ${getDeviceSvg(hwImg + ' ' + hwName)}
+                            </div>
                             <span class="card-title" title="${hwName}">${hwName}</span>
                         </div>
                         <span class="card-badge">${sensorsToDisplay.length} sensores</span>
@@ -710,28 +1126,34 @@
                     <div class="card-body">
                 `;
 
+                let lastCategory = '';
                 sensorsToDisplay.forEach(sensor => {
-                    const num = parseValNum(sensor.value);
-                    const isPercent = sensor.value && sensor.value.includes('%');
-                    const isTemp = sensor.value && sensor.value.includes('°C');
-                    const tempClass = isTemp ? getTempClass(num) : '';
-                    const fillClass = isPercent ? getProgressColor(num) : '';
+                    if (sensor.category !== lastCategory) {
+                        lastCategory = sensor.category;
+                        html += `<div class="sensor-group-title">${lastCategory}</div>`;
+                    }
+
+                    const num = parseNum(sensor.value);
+                    const isPercent = sensor.value.includes('%');
+                    const isTemp = sensor.value.includes('°C');
+                    const tempClass = isTemp ? getHeatClass(num) : '';
+                    const progressClass = isPercent ? getProgressColor(num) : '';
 
                     html += `
-                        <div class="sensor-row">
-                            <div class="sensor-label-val">
-                                <span class="sensor-name" title="${sensor.category}: ${sensor.name}">${sensor.name}</span>
-                                <div>
-                                    <span class="sensor-val ${tempClass}">${sensor.value || '-'}</span>
-                                    ${(sensor.min || sensor.max) ? `<span class="sensor-minmax">[${sensor.min || '-'} / ${sensor.max || '-'}]</span>` : ''}
-                                </div>
+                    <div class="sensor-item">
+                        <div class="sensor-meta">
+                            <span class="sensor-name" title="${sensor.category}: ${sensor.name}">${sensor.name}</span>
+                            <div class="sensor-values-group">
+                                <span class="sensor-val ${tempClass}">${sensor.value}</span>
+                                ${(sensor.min !== '-' || sensor.max !== '-') ? `<span class="sensor-minmax">[${sensor.min} / ${sensor.max}]</span>` : ''}
                             </div>
-                            ${isPercent && num !== null ? `
-                                <div class="progress-bar-bg">
-                                    <div class="progress-bar-fill ${fillClass}" style="width: ${Math.min(100, Math.max(0, num))}%;"></div>
-                                </div>
-                            ` : ''}
                         </div>
+                        ${isPercent && num !== null ? `
+                        <div class="progress-track">
+                            <div class="progress-bar ${progressClass}" style="width: ${Math.min(100, Math.max(0, num))}%;"></div>
+                        </div>
+                        ` : ''}
+                    </div>
                     `;
                 });
 
@@ -741,70 +1163,70 @@
                 `;
             });
 
-            cardsView.innerHTML = html || '<p style="color: var(--text-muted); padding: 2rem;">Nenhum sensor corresponde à pesquisa.</p>';
+            cardsView.innerHTML = html || '<p style="color: var(--text-muted); padding: 3rem; text-align: center; grid-column: 1 / -1;">Nenhum sensor corresponde ao filtro de pesquisa.</p>';
         }
 
-        // Render Table View (Full Tree)
-        function renderTable(computerNode) {
+        // Technical Table Renderer
+        function renderTable(root) {
+            const hwList = root.Children || [];
             let rowsHtml = '';
-            const hardwareNodes = computerNode.Children || [];
 
-            hardwareNodes.forEach(hw => {
+            hwList.forEach(hw => {
                 const hwName = hw.Text || '';
-                const hwImg = hw.ImageURL || 'images_icon/computer.png';
+                const hwImg = hw.ImageURL || '';
+                const cats = hw.Children || [];
 
                 rowsHtml += `
-                    <tr class="row-hardware">
-                        <td colspan="4">
-                            <div class="sensor-tree-title">
-                                <img src="${hwImg}" width="18" height="18" alt="">
-                                <span>${hwName}</span>
+                <tr class="row-hardware">
+                    <td colspan="4">
+                        <div style="display:flex; align-items:center; gap:0.5rem;">
+                            <div class="device-icon-wrap" style="width:22px; height:22px;">
+                                ${getDeviceSvg(hwImg + ' ' + hwName)}
                             </div>
-                        </td>
-                    </tr>
+                            <span>${hwName}</span>
+                        </div>
+                    </td>
+                </tr>
                 `;
 
-                (hw.Children || []).forEach(cat => {
-                    const catName = cat.Text || '';
-                    const catImg = cat.ImageURL || 'images_icon/computer.png';
-
+                cats.forEach(c => {
+                    const catName = c.Text || '';
                     rowsHtml += `
-                        <tr class="row-category">
-                            <td colspan="4" style="padding-left: 1.75rem;">
-                                <div class="sensor-tree-title">
-                                    <img src="${catImg}" width="16" height="16" alt="">
-                                    <span>${catName}</span>
-                                </div>
-                            </td>
-                        </tr>
+                    <tr class="row-category">
+                        <td colspan="4" style="padding-left: 2rem;">${catName}</td>
+                    </tr>
                     `;
 
-                    (cat.Children || []).forEach(sensor => {
-                        const sName = sensor.Text || '';
+                    (c.Children || []).forEach(s => {
+                        const sName = s.Text || '';
                         if (searchQuery && !sName.toLowerCase().includes(searchQuery) && !hwName.toLowerCase().includes(searchQuery) && !catName.toLowerCase().includes(searchQuery)) {
                             return;
                         }
 
-                        const num = parseValNum(sensor.Value);
-                        const isTemp = sensor.Value && sensor.Value.includes('°C');
-                        const tempClass = isTemp ? getTempClass(num) : '';
+                        const num = parseNum(s.Value);
+                        const isTemp = s.Value && s.Value.includes('°C');
+                        const tempClass = isTemp ? getHeatClass(num) : '';
 
                         rowsHtml += `
-                            <tr>
-                                <td style="padding-left: 3rem;">${sName}</td>
-                                <td style="color: var(--text-muted);">${sensor.Min || '-'}</td>
-                                <td class="${tempClass}" style="font-weight: 700;">${sensor.Value || '-'}</td>
-                                <td style="color: var(--text-muted);">${sensor.Max || '-'}</td>
-                            </tr>
+                        <tr>
+                            <td style="padding-left: 3.5rem; font-family: var(--font-sans); font-weight: 500;">${sName}</td>
+                            <td style="color: var(--text-muted);">${s.Min || '-'}</td>
+                            <td class="${tempClass}" style="font-weight: 700;">${s.Value || '-'}</td>
+                            <td style="color: var(--text-muted);">${s.Max || '-'}</td>
+                        </tr>
                         `;
                     });
                 });
             });
 
-            sensorsTableBody.innerHTML = rowsHtml || '<tr><td colspan="4" style="text-align:center; padding: 2rem; color: var(--text-muted);">Nenhum resultado encontrado.</td></tr>';
+            sensorsTableBody.innerHTML = rowsHtml || '<tr><td colspan="4" style="text-align: center; padding: 3rem; color: var(--text-muted);">Nenhum sensor encontrado.</td></tr>';
         }
 
-        // Initial Load
+        // Initialize Theme from localStorage / system
+        const initialSaved = localStorage.getItem("color-scheme");
+        updateThemeUI(initialSaved || 'auto');
+
+        // Initial Data Fetch
         fetchData();
         restartTimer();
     </script>

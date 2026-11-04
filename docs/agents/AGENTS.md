@@ -81,3 +81,20 @@ refactor(ui): decompor MainForm em classes parciais e criar hub docs
 - Criar documentacao estruturada em docs/ (INDEX.md, FILE_TREE.md, RELATORIO, AGENTS)
 - Assegurar compilacao com 0 avisos e 0 erros em .NET 8.0
 ```
+
+---
+
+## 6. Padroes de Dashboard Web e Maxima Performance
+
+1. **Regra de Iconografia e Zero Emojis:**
+   - Emojis sao terminantemente proibidos na interface web.
+   - Todos os elementos visuais devem utilizar icones vetoriais SVG inline em modo `stroke="currentColor"`, integrando-se nativamente com os temas claro e escuro.
+2. **KISS e DRY na Web:**
+   - Zero dependencias externas (sem jQuery, Knockout, React ou CDNs externos). Todo o dashboard reside em `Resources/Web/index.html` autossuficiente e embutido no executavel.
+   - Reutilizacao de funcoes de formatacao numerica, classes de calor dinamico (`temp-cool`, `temp-warm`, `temp-hot`) e estilizacao de barras de progresso.
+3. **Isolamento de Layout e Reducao de Latencia (INP / LCP):**
+   - Utilizacao da diretiva CSS `content-visibility: auto` com `contain-intrinsic-size` em cada cartao de hardware.
+   - Isto isola o custo de recalculo de layout e pintura apenas ao elemento que sofre alteracao, mantendo taxas de 60 FPS e uso de CPU praticamente nulo durante o polling assincrono.
+4. **Respeito pelas Diretrizes Modern Web Guidance:**
+   - Suporte a `<meta name="color-scheme" content="light dark">` com script inline imediato para prevencao total de FOUC (Flash of Unstyled Content).
+   - Alternador de tema em 3 estados (Sistema/Auto, Escuro, Claro) com persistencia transparente em `localStorage`.
