@@ -189,12 +189,35 @@ public sealed partial class MainForm : Form
         static void InstallPawnIO()
         {
             string path = ExtractPawnIO();
-            if (!string.IsNullOrEmpty(path))
-            {
-                var process = Process.Start(new ProcessStartInfo(path, "-install"));
-                process?.WaitForExit();
+            if (string.IsNullOrEmpty(path))
+                return;
 
-                File.Delete(path);
+            try
+            {
+                // The installer requires elevation; ShellExecute with "runas" triggers UAC
+                // instead of failing with ERROR_ELEVATION_REQUIRED (740) when not elevated.
+                var startInfo = new ProcessStartInfo(path, "-install") { UseShellExecute = true, Verb = "runas" };
+                using Process process = Process.Start(startInfo);
+                process?.WaitForExit();
+            }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 1223)
+            {
+                // ERROR_CANCELLED: the user declined the UAC prompt; continue without PawnIO.
+            }
+            catch (Win32Exception ex)
+            {
+                MessageBox.Show("PawnIO installation failed: " + ex.Message, nameof(LibreHardwareMonitor), MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            finally
+            {
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (IOException)
+                { }
+                catch (UnauthorizedAccessException)
+                { }
             }
         }
 
