@@ -7,5 +7,5 @@ net session >nul 2>&1
 if %errorlevel% == 0 (
     start "" "%~dp0bin\Release\net8.0-windows\LibreHardwareMonitor.Windows.Forms.exe"
 ) else (
-    powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process '%~dp0bin\Release\net8.0-windows\LibreHardwareMonitor.Windows.Forms.exe' -Verb RunAs"
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "Start-Process -FilePath '%~dp0bin\Release\net8.0-windows\LibreHardwareMonitor.Windows.Forms.exe' -WorkingDirectory '%~dp0bin\Release\net8.0-windows' -Verb RunAs"
 )

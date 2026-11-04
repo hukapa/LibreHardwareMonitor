@@ -222,8 +222,7 @@ public class Computer : IComputer
         {
             if (_open && value != _memoryEnabled)
             {
-                if (value)
-                    Add(new MemoryGroup(_settings));
+                if (value) { try { Add(new MemoryGroup(_settings)); } catch { } }
                 else
                     RemoveType<MemoryGroup>();
             }
@@ -525,52 +524,78 @@ public class Computer : IComputer
     private void AddGroups()
     {
         if (_motherboardEnabled)
-            Add(new MotherboardGroup(_smbios, _settings));
+        {
+            try { Add(new MotherboardGroup(_smbios, _settings)); } catch { }
+        }
 
         if (_cpuEnabled)
-            Add(new CpuGroup(_settings));
+        {
+            try { Add(new CpuGroup(_settings)); } catch { }
+        }
 
         if (_memoryEnabled)
-            Add(new MemoryGroup(_settings));
+        {
+            try { Add(new MemoryGroup(_settings)); } catch { }
+        }
 
         if (_gpuEnabled)
         {
-            Add(new AmdGpuGroup(_settings));
-            Add(new NvidiaGroup(_settings));
+            try
+            {
+                Add(new AmdGpuGroup(_settings));
+                Add(new NvidiaGroup(_settings));
 
-            if (_cpuEnabled)
-                Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+                if (_cpuEnabled)
+                    Add(new IntelGpuGroup(GetIntelCpus(), _settings));
+            }
+            catch { }
         }
 
         if (_powerMonitorEnabled)
-            Add(new PowerMonitorGroup(_settings));
+        {
+            try { Add(new PowerMonitorGroup(_settings)); } catch { }
+        }
 
         if (_controllerEnabled)
         {
-            Add(new TBalancerGroup(_settings));
-            Add(new HeatmasterGroup(_settings));
-            Add(new AquaComputerGroup(_settings));
-            Add(new AeroCoolGroup(_settings));
-            Add(new NzxtGroup(_settings));
-            Add(new RazerGroup(_settings));
-            Add(new ArcticGroup(_settings));
-            Add(new MsiGroup(_settings));
+            try
+            {
+                Add(new TBalancerGroup(_settings));
+                Add(new HeatmasterGroup(_settings));
+                Add(new AquaComputerGroup(_settings));
+                Add(new AeroCoolGroup(_settings));
+                Add(new NzxtGroup(_settings));
+                Add(new RazerGroup(_settings));
+                Add(new ArcticGroup(_settings));
+                Add(new MsiGroup(_settings));
+            }
+            catch { }
         }
 
         if (_storageEnabled)
-            Add(new StorageGroup(_settings));
+        {
+            try { Add(new StorageGroup(_settings)); } catch { }
+        }
 
         if (_networkEnabled)
-            Add(new NetworkGroup(_settings));
+        {
+            try { Add(new NetworkGroup(_settings)); } catch { }
+        }
 
         if (_psuEnabled)
         {
-            Add(new CorsairPsuGroup(_settings));
-            Add(new MsiPsuGroup(_settings));
+            try
+            {
+                Add(new CorsairPsuGroup(_settings));
+                Add(new MsiPsuGroup(_settings));
+            }
+            catch { }
         }
 
         if (_batteryEnabled)
-            Add(new BatteryGroup(_settings));
+        {
+            try { Add(new BatteryGroup(_settings)); } catch { }
+        }
     }
 
     private static void NewSection(TextWriter writer)

@@ -1,4 +1,4 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -29,15 +29,28 @@ internal class MemoryGroup : IGroup, IHardwareChanged
 
     public MemoryGroup(ISettings settings)
     {
+        _hardware.Add(new VirtualMemory(settings));
+        _hardware.Add(new TotalMemory(settings));
+
+        try
+        {
+            InitializeSpd(settings);
+        }
+        catch (Exception ex)
+        {
+            _lastException = ex;
+        }
+    }
+
+    [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)]
+    private void InitializeSpd(ISettings settings)
+    {
         if (DriverManager.Driver is null || !DriverManager.Driver.IsOpen)
         {
             // Assign implementation of IDriver.
             DriverManager.Driver = new RAMSPDToolkitDriver();
             SMBusManager.UseWMI = false;
         }
-
-        _hardware.Add(new VirtualMemory(settings));
-        _hardware.Add(new TotalMemory(settings));
 
         if (DriverManager.Driver == null || !DriverManager.LoadDriver())
         {
