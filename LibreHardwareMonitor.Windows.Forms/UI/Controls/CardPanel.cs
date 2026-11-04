@@ -20,6 +20,9 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Controls
         public void ApplyTheme(Theme theme)
         {
             BackColor = theme.SurfaceColor;
+            foreach (Control child in Controls)
+                theme.Apply(child);
+
             Invalidate();
         }
 

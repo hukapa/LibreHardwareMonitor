@@ -197,9 +197,12 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
         {
             if (control is IThemedControl themedControl)
             {
+                // Themed controls style themselves and are responsible for their children.
                 themedControl.ApplyTheme(this);
+                return;
             }
-            else if (control is Button button)
+
+            if (control is Button button)
             {
                 button.ForeColor = ButtonTextColor;
                 button.FlatStyle = FlatStyle.Flat;
@@ -247,7 +250,10 @@ namespace LibreHardwareMonitor.Windows.Forms.UI.Themes
         }
     }
 
-    /// <summary>Controls that paint themselves from the active <see cref="Theme" /> tokens.</summary>
+    /// <summary>
+    /// Controls that paint themselves from the active <see cref="Theme" /> tokens. Implementations
+    /// must forward the theme to their child controls (for example via <see cref="Theme.Apply(Control)" />).
+    /// </summary>
     public interface IThemedControl
     {
         void ApplyTheme(Theme theme);

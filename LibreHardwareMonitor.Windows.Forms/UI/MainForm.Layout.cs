@@ -20,11 +20,13 @@ public sealed partial class MainForm
     private const int SidebarCompactLogicalWidth = 56;
     private const int CompactBreakpointLogical = 860;
     private const int SummaryResolveTicks = 5;
+    private const int SearchLogicalWidth = 300;
 
     private SidebarPanel _sidebar;
     private SummaryPanel _summary;
     private Panel _content;
     private CardPanel _treeCard;
+    private SearchBox _search;
     private int _summaryResolveCountdown = SummaryResolveTicks;
 
     private void InitializeShell()
@@ -40,10 +42,16 @@ public sealed partial class MainForm
         _summary.CardClicked += Summary_CardClicked;
 
         int gutter = LogicalToDeviceUnits(12);
+        _search = new SearchBox { Dock = DockStyle.Left, Width = LogicalToDeviceUnits(SearchLogicalWidth) };
+        _search.SearchChanged += Search_SearchChanged;
+        Panel toolbar = new() { Dock = DockStyle.Top, Height = _search.Height + gutter, Padding = new Padding(0, 0, 0, gutter) };
+        toolbar.Controls.Add(_search);
+
+        // Docking runs from the back of the z-order: summary, then toolbar, then the tree card.
         _content = new Panel { Dock = DockStyle.Fill, Padding = new Padding(0, LogicalToDeviceUnits(6), gutter, gutter) };
         _content.Controls.Add(_treeCard);
+        _content.Controls.Add(toolbar);
         _content.Controls.Add(_summary);
-        _treeCard.BringToFront();
 
         _sidebar = new SidebarPanel { Dock = DockStyle.Left, Width = LogicalToDeviceUnits(SidebarLogicalWidth) };
         _sidebar.SelectionChanged += Sidebar_SelectionChanged;
@@ -140,10 +148,37 @@ public sealed partial class MainForm
             _settings.SetValue(ScopeSettingKey, scope?.Hardware.Identifier.ToString() ?? string.Empty);
     }
 
-    /// <summary>Re-applies the persisted expand state to nodes that were reloaded by a scope change.</summary>
+    private void Search_SearchChanged(object sender, EventArgs e)
+    {
+        if (treeView.Model is not TreeModel model)
+            return;
+
+        model.Filter = _search.Query;
+        RestoreExpandedState();
+    }
+
+    /// <summary>
+    /// Re-applies the expand state to nodes reloaded by a scope or filter change: everything is
+    /// expanded while searching (without persisting), otherwise the persisted state is used.
+    /// </summary>
     private void RestoreExpandedState()
     {
+        bool searching = (treeView.Model as TreeModel)?.Filter.Length > 0;
+        treeView.BeginUpdate();
         foreach (TreeNodeAdv node in treeView.AllNodes.ToList())
-            node.IsExpanded = node.Tag is not IExpandPersistNode persist || persist.Expanded;
+            node.IsExpanded = searching || node.Tag is not IExpandPersistNode persist || persist.Expanded;
+
+        treeView.EndUpdate();
+    }
+
+    protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+    {
+        if (keyData == (Keys.Control | Keys.F) && _search != null)
+        {
+            _search.FocusSearch();
+            return true;
+        }
+
+        return base.ProcessCmdKey(ref msg, keyData);
     }
 }

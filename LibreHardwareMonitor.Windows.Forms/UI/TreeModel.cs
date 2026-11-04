@@ -18,6 +18,7 @@ public class TreeModel : ITreeModel
     private readonly Node _root;
     private bool _forceVisible;
     private Node _scope;
+    private string _filter = string.Empty;
 
     public TreeModel()
     {
@@ -61,10 +62,45 @@ public class TreeModel : ITreeModel
         Node node = GetNode(treePath);
         if (node != null)
         {
-            return node.Nodes.Where(n => (_forceVisible || n.IsVisible) && !IsOutOfScope(node, n)).ToList();
+            // Once an ancestor matches the text filter its whole subtree is shown.
+            bool ancestorMatches = _filter.Length > 0 && treePath.FullPath.OfType<Node>().Any(TextMatches);
+            return node.Nodes.Where(n => IsShown(n) && !IsOutOfScope(node, n) && (_filter.Length == 0 || ancestorMatches || Matches(n))).ToList();
         }
 
         return Enumerable.Empty<Node>();
+    }
+
+    /// <summary>
+    /// Case-insensitive text filter: shows matching nodes, their ancestors and their subtrees.
+    /// An empty string disables filtering.
+    /// </summary>
+    public string Filter
+    {
+        get { return _filter; }
+        set
+        {
+            value = value?.Trim() ?? string.Empty;
+            if (value != _filter)
+            {
+                _filter = value;
+                OnStructureChanged(_root);
+            }
+        }
+    }
+
+    private bool IsShown(Node node)
+    {
+        return _forceVisible || node.IsVisible;
+    }
+
+    private bool TextMatches(Node node)
+    {
+        return node.Text != null && node.Text.IndexOf(_filter, StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    private bool Matches(Node node)
+    {
+        return TextMatches(node) || node.Nodes.Any(child => IsShown(child) && Matches(child));
     }
 
     /// <summary>
@@ -118,12 +154,17 @@ public class TreeModel : ITreeModel
 #pragma warning restore 67
 
     /// <summary>
-    /// Visibility events carry indices computed over all visible siblings; while a scope filters
-    /// those siblings the indices do not match the view, so the parent is reloaded instead.
+    /// Visibility events carry indices computed over all visible siblings; while a scope or text
+    /// filter hides some of those siblings the indices do not match the view, so the parent is
+    /// reloaded instead.
     /// </summary>
     private bool ReloadIfScoped(Node parent)
     {
-        if (_scope == null || parent == null || _scope.Parent != parent)
+        if (parent == null)
+            return false;
+
+        bool scoped = _scope != null && _scope.Parent == parent;
+        if (!scoped && _filter.Length == 0)
             return false;
 
         OnStructureChanged(parent);
