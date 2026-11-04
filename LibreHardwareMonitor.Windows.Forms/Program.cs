@@ -1,4 +1,4 @@
-﻿// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
 // If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 // Copyright (C) LibreHardwareMonitor and Contributors.
 // Partial Copyright (C) Michael Möller <mmoeller@openhardwaremonitor.org> and Contributors.
@@ -6,6 +6,7 @@
 
 using System;
 using System.IO;
+using System.Reflection;
 using System.Windows.Forms;
 using LibreHardwareMonitor.Windows.Forms.UI;
 
@@ -55,31 +56,47 @@ public static class Program
         }
     }
 
-    private static bool IsFileAvailable(string fileName)
+    private static bool IsAssemblyAvailable(string assemblyName)
     {
-        string path = Path.GetDirectoryName(Application.ExecutablePath) + Path.DirectorySeparatorChar;
-        if (!File.Exists(path + fileName))
+        try
         {
-            MessageBox.Show("The following file could not be found: " + fileName +
-                            "\nPlease extract all files from the archive.", "Error",
-                            MessageBoxButtons.OK, MessageBoxIcon.Error);
-            return false;
+            Assembly[] loaded = AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0; i < loaded.Length; i++)
+            {
+                if (string.Equals(loaded[i].GetName().Name, assemblyName, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            }
+
+            Assembly asm = Assembly.Load(new AssemblyName(assemblyName));
+            if (asm != null)
+                return true;
         }
-        return true;
+        catch
+        {
+        }
+
+        string path = Path.GetDirectoryName(Application.ExecutablePath) + Path.DirectorySeparatorChar;
+        if (File.Exists(path + assemblyName + ".dll"))
+            return true;
+
+        MessageBox.Show("The following component could not be found: " + assemblyName +
+                        "\nPlease extract all files from the archive.", "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+        return false;
     }
 
     private static bool AllRequiredFilesAvailable()
     {
-        if (!IsFileAvailable("Aga.Controls.dll"))
+        if (!IsAssemblyAvailable("Aga.Controls"))
             return false;
 
-        if (!IsFileAvailable("LibreHardwareMonitorLib.dll"))
+        if (!IsAssemblyAvailable("LibreHardwareMonitorLib"))
             return false;
 
-        if (!IsFileAvailable("OxyPlot.dll"))
+        if (!IsAssemblyAvailable("OxyPlot"))
             return false;
 
-        if (!IsFileAvailable("OxyPlot.WindowsForms.dll"))
+        if (!IsAssemblyAvailable("OxyPlot.WindowsForms"))
             return false;
 
         return true;
