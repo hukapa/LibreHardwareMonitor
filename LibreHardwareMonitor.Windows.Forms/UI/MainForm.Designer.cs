@@ -180,7 +180,7 @@ namespace LibreHardwareMonitor.Windows.Forms.UI
             this.value.Header = "Value";
             this.value.SortOrder = System.Windows.Forms.SortOrder.None;
             this.value.TooltipText = null;
-            this.value.Width = 100;
+            this.value.Width = 150;
             this.value.WidthChanged += delegate { TreeView_ColumnWidthChanged(this.value); };
             //
             // min

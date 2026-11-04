@@ -34,6 +34,8 @@ public sealed partial class MainForm
 
     private void NodeTextBoxText_DrawText(object sender, DrawEventArgs e)
     {
+        ApplyTreeTextStyle(sender, e);
+
         if (e.Node.Tag is Node node)
         {
             if (node.IsVisible)

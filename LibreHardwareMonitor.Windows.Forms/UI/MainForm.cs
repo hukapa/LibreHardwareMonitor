@@ -562,6 +562,7 @@ public sealed partial class MainForm : Form
         };
 
         InitializeTheme();
+        InitializeTreeStyle();
         InitializePlotForm();
         InitializeSplitter();
 
